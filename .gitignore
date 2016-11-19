@@ -1,0 +1,27 @@
+# Compiled Products
+*.dll
+*.exe
+*.pdb
+*.xml
+*.so
+*.dylib
+
+# NuGet
+packages
+*.config
+
+# Intermediate Files
+Debug
+Release
+
+# Profiling results
+*.vspx
+
+# Visual studio user files
+.vs
+*.csproj.user
+*.user
+
+# Source asset files
+*.psd
+*.max
