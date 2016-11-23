@@ -10,10 +10,8 @@ using osu.Framework.Allocation;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Primitives;
 using osu.Framework.Graphics.Shaders;
-using osu.Framework.Graphics.Sprites;
 using osu.Framework.Graphics.Textures;
 using OpenTK;
-using OpenTK.Graphics;
 
 namespace FX2.Game.Graphics
 {

@@ -31,7 +31,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject />
+    <StartupObject>FX2.Tests.TestDatabase</StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="nunit.framework, Version=3.5.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
@@ -50,9 +50,11 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestBeatmap.cs" />
+    <Compile Include="TestDatabase.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="TestMaps\C18H27NO3.ksh" />
+    <None Include="app.config" />
     <None Include="packages.config" />
     <EmbeddedResource Include="TestMaps\soflan.ksh" />
   </ItemGroup>

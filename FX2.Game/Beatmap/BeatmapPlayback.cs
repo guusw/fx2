@@ -190,7 +190,6 @@ namespace FX2.Game.Beatmap
 
             // Iterate over objects in view
             bool endReached = false;
-            bool isFirstObject = true;
             while(!endReached)
             {
                 if(measure.AbsolutePosition > endPosition)

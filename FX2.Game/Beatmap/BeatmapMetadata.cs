@@ -2,10 +2,12 @@
 // Licensed under the MIT License(MIT)
 // See "LICENSE.txt" for more information
 
+using System;
 using System.Collections.Generic;
 
 namespace FX2.Game.Beatmap
 {
+    [Serializable]
     public class BeatmapMetadata
     {
         /// <summary>

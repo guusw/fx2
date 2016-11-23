@@ -7,7 +7,7 @@ using System;
 namespace FX2.Game.Graphics
 {
     /// <summary>
-    /// Base class for data associated with an object to render in a <see cref="TrackRenderer{TAssociatedData}"/>
+    /// Base class for data associated with an object to render in a <see cref="TrackRendererBase"/>
     /// </summary>
     public abstract class TrackRendererData : IDisposable
     {

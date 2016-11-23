@@ -41,7 +41,6 @@ namespace FX2.Game.Beatmap
         static BeatmapKSH()
         {
             LaserCharacters = new Dictionary<char, byte>();
-            byte index = 0;
             Action<char, char> AddRange = (char start, char end) =>
             {
                 for(char c = start; c <= end; c++)
@@ -86,7 +85,7 @@ namespace FX2.Game.Beatmap
                 if(line == Separator)
                     break; // End of options
 
-                var split = line.Split('=');
+                var split = line.Split(new[] {'='}, 2);
                 if(split.Length != 2)
                     parser.Throw("Failed to find valid setting entry");
                 if(split[0].Length == 0)
@@ -222,7 +221,7 @@ namespace FX2.Game.Beatmap
 
             public float LaserAsFloat(int index)
             {
-                return (float)Lasers[index] / (LaserRange-1);
+                return (float)Lasers[index] / (LaserRange - 1);
             }
 
             public override string ToString()

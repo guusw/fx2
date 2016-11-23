@@ -7,7 +7,6 @@ using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Sprites;
 using OpenTK;
-using OpenTK.Platform.Windows;
 
 namespace FX2.Game.Graphics
 {

@@ -580,11 +580,6 @@ namespace FX2.Game.Beatmap
             /// </summary>
             public bool Snap32 = false;
 
-            /// <summary>
-            /// Set for hold continuations, this is where there is a hold right after an existing one but with different effects
-            /// </summary>
-            public Hold LastHoldObject;
-
             public bool IsHoldState => NumTicks > 0 && Snap32;
         }
 
