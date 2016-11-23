@@ -1,0 +1,37 @@
+# version format
+version: 1.0.{build}
+
+# Build worker image (VM template)
+image: Visual Studio 2015
+
+# clone directory
+clone_folder: c:\projects\fx2
+
+# build cache to preserve files/folders between builds
+cache:
+  - packages -> **\packages.config  # preserve "packages" directory in the root of build folder but will reset it if packages.config is modified
+
+# build platform, i.e. x86, x64, Any CPU. This setting is optional.
+platform: Any CPU
+
+# build Configuration, i.e. Debug, Release, etc.
+configuration: Release
+
+test:
+  assemblies:
+    - FX2.Tests.exe
+
+# scripts to run after build
+after_build:
+  7z a bin\artifacts.zip bin\*.exe bin\*.dll
+    
+artifacts:
+  - path: test.zip
+  
+notifications:
+  - provider: Email
+    to:
+      - guus_waals@live.nl
+    subject: 'Build {{status}}'                  # optional
+    message: "{{message}}, {{commitId}}, ..."    # optional
+    on_build_failure: true
