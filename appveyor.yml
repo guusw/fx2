@@ -27,7 +27,8 @@ test:
     
 install:
   git submodule update --init --recursive
-  .nuget\nuget restore FX2.sln
+  dir
+  .nuget\nuget.exe restore FX2.sln
     
 before_build:
   dir
