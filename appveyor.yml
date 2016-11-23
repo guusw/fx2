@@ -17,6 +17,10 @@ platform: Any CPU
 # build Configuration, i.e. Debug, Release, etc.
 configuration: Release
 
+build:
+  parallel: true
+  project: FX2.sln 
+
 test:
   assemblies:
     - FX2.Tests.exe
