@@ -4,7 +4,7 @@
 
 using OpenTK.Graphics;
 
-namespace FX2.Shared
+namespace FX2.Game
 {
     public static class ColorExtensions
     {

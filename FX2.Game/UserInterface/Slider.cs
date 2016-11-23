@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Eventing.Reader;
-using FX2.Shared;
 using osu.Framework;
 using osu.Framework.Configuration;
 using osu.Framework.Extensions.Color4Extensions;

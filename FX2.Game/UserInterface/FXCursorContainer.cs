@@ -2,7 +2,6 @@
 // Licensed under the MIT License(MIT)
 // See "LICENSE.txt" for more information
 
-using FX2.Shared;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Cursor;

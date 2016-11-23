@@ -41,7 +41,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
-    <Folder Include="Resources\" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Fonts\Exo2.0-Regular.fnt" />
@@ -66,6 +65,7 @@
     <EmbeddedResource Include="Samples\Keyboard\key-press-2.wav" />
     <EmbeddedResource Include="Samples\Keyboard\key-press-3.wav" />
     <EmbeddedResource Include="Samples\Keyboard\key-press-4.wav" />
+    <EmbeddedResource Include="Samples\laser_slam0.wav" />
     <EmbeddedResource Include="Samples\laser_slam1.wav" />
     <EmbeddedResource Include="Textures\bg.png" />
     <EmbeddedResource Include="Textures\button.png" />
@@ -89,9 +89,8 @@
     <EmbeddedResource Include="Textures\track.png" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Samples\laser_slam0.wav" />
-    <Content Include="Shaders\sh_Laser.fs" />
-    <Content Include="Shaders\sh_Utils.h" />
+    <EmbeddedResource Include="Fonts\Exo2.0-license.txt" />
+    <EmbeddedResource Include="Shaders\sh_Utils.h" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

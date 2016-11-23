@@ -89,7 +89,6 @@
     <Compile Include="Graphics\LaserDrawNode.cs" />
     <Compile Include="Graphics\LaserRenderData2D.cs" />
     <Compile Include="Graphics\RenderData2D.cs" />
-    <Compile Include="Graphics3D\Container3D.cs" />
     <Compile Include="Graphics\TrackRenderer.cs" />
     <Compile Include="Graphics\RatioAdjust.cs" />
     <Compile Include="Graphics\TrackRenderer2D.cs" />

@@ -32,6 +32,15 @@ namespace FX2.Game.Tests
         private ControllerWindow controllerWindow;
         private FileStream audioTrackStream;
 
+        public override string Name { get; } = "Beatmap (2D)";
+
+        public override string Description { get; } = "Tests various aspects of beatmap playback, including audio/effects";
+
+        public TestBeatmap()
+        {
+            
+        }
+
         public Beatmap.Beatmap LoadTestBeatmap(string name, out string mapRootPath, string preferedFileName = null)
         {
             mapRootPath = Path.Combine(Environment.CurrentDirectory, "TestMaps", name);
@@ -49,12 +58,18 @@ namespace FX2.Game.Tests
             return new Beatmap.Beatmap(new BeatmapKSH(stream));
         }
 
+        protected override bool UpdateSubTree()
+        {
+            return base.UpdateSubTree();
+        }
+
         public override void Reset()
         {
             base.Reset();
 
-            //beatmap = LoadTestBeatmap("C18H27NO3", out beatmapRootPath);
-            beatmap = LoadTestBeatmap("soflan", out beatmapRootPath, "two");
+            beatmap = LoadTestBeatmap("C18H27NO3", out beatmapRootPath);
+            //beatmap = LoadTestBeatmap("soflan", out beatmapRootPath, "two");
+            //beatmap = LoadTestBeatmap("bb", out beatmapRootPath, "grv");
             playback.Beatmap = beatmap;
             playback.ViewDuration = 0.8f;
 
@@ -62,8 +77,7 @@ namespace FX2.Game.Tests
             string audioPath = Path.Combine(beatmapRootPath, beatmap.Metadata.AudioPath);
             audioTrackStream = File.Open(audioPath, FileMode.Open);
             audioTrack = new AudioTrackBass(audioTrackStream, false);
-
-            audioTrack.Seek(66.0);
+            
             //audioTrack.Start();
             
             Add(gameView = new GameRenderView
@@ -117,8 +131,8 @@ namespace FX2.Game.Tests
         protected override void Dispose(bool isDisposing)
         {
             base.Dispose(isDisposing);
-            audioTrack.Dispose();
-            audioTrackStream.Dispose();
+            audioTrack?.Dispose();
+            audioTrackStream?.Dispose();
         }
 
         [BackgroundDependencyLoader]
