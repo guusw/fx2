@@ -54,7 +54,6 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="TestMaps\C18H27NO3.ksh" />
-    <None Include="app.config" />
     <None Include="packages.config" />
     <EmbeddedResource Include="TestMaps\soflan.ksh" />
   </ItemGroup>
