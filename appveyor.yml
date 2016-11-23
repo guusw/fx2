@@ -10,7 +10,7 @@ clone_folder: c:\projects\fx2
 # build cache to preserve files/folders between builds
 cache:
   - packages -> **\packages.config  # preserve "packages" directory in the root of build folder but will reset it if packages.config is modified
-
+  
 # build platform, i.e. x86, x64, Any CPU. This setting is optional.
 platform: Any CPU
 
@@ -20,7 +20,13 @@ configuration: Release
 test:
   assemblies:
     - FX2.Tests.exe
-
+    
+before_build:
+  dir
+  
+init:
+  dir
+  
 # scripts to run after build
 after_build:
   7z a bin\artifacts.zip bin\*.exe bin\*.dll
