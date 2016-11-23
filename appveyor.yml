@@ -21,10 +21,10 @@ test:
   assemblies:
     - FX2.Tests.exe
     
+install:
+  git submodule update --init --recursive
+    
 before_build:
-  dir
-  
-init:
   dir
   
 # scripts to run after build
