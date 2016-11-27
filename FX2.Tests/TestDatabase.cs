@@ -24,7 +24,7 @@ namespace FX2.Tests
         {
             SetIndex testSet;
 
-            using(BeatmapDatabase database = new BeatmapDatabase(true))
+            using(BeatmapDatabase database = new BeatmapDatabase("test_database", true))
             {
                 string testPath = Path.Combine(Environment.CurrentDirectory, "TestMaps");
 
@@ -63,7 +63,7 @@ namespace FX2.Tests
             }
 
             // Test database reloads
-            using(BeatmapDatabase database = new BeatmapDatabase())
+            using(BeatmapDatabase database = new BeatmapDatabase("test_database"))
             {
                 // Ensure all 4 test sets are detected
                 Assert.AreEqual(4, database.Sets.Count);
@@ -80,15 +80,14 @@ namespace FX2.Tests
                 Assert.AreEqual(diff.LastWriteTime, diff1.LastWriteTime);
             }
         }
-
-        [Test]
+        
         public void TestLargeDatabase()
         {
             Stopwatch timer = new Stopwatch();
 
             using(BeatmapDatabase database = new BeatmapDatabase("large_database"))
             {
-                string testPath = @"D:\KShoot163a\songs"; // Note: replace this with your own large KShoot folder for this test to be useful
+                string testPath = @"."; // Note: replace this with your own large KShoot folder for this test to be useful
 
                 timer.Start();
                 database.AddSearchPath(testPath);

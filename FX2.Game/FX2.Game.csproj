@@ -97,6 +97,7 @@
     <Compile Include="Tests\ControllerWindow.cs" />
     <Compile Include="Tests\Test3D.cs" />
     <Compile Include="Tests\TestBeatmap.cs" />
+    <Compile Include="Tests\TestParticles.cs" />
     <Compile Include="UserInterface\FXCursorContainer.cs" />
     <Compile Include="Graphics\GameRenderView.cs" />
     <Compile Include="UserInterface\Slider.cs" />

@@ -3,6 +3,8 @@
 // See "LICENSE.txt" for more information
 
 using System.Collections.Generic;
+using System.Drawing;
+using System.Threading.Tasks;
 using osu.Framework;
 using osu.Framework.Allocation;
 using osu.Framework.GameModes.Testing;
@@ -11,6 +13,7 @@ using osu.Framework.Graphics.Textures;
 using osu.Framework.Graphics.Transformations;
 using osu.Framework.Graphics3D;
 using osu.Framework.Input;
+using osu.Framework.Threading;
 using OpenTK;
 using OpenTK.Graphics;
 
@@ -19,10 +22,10 @@ namespace FX2.Game.Tests
     public class Test3D : TestCase
     {
         private Render3DContainer render3DContainer;
-        public override string Name { get; } = "3D Rendering";
-        public override string Description { get; } = "Tests the basic 3D rendering framework";
 
         private Texture testTexture;
+
+        private ScheduledDelegate animation;
 
         private Drawable3D cameraBoom;
         private Sprite3D testSprite;
@@ -30,10 +33,14 @@ namespace FX2.Game.Tests
 
         private Vector3 cameraRotation = Vector3.Zero;
 
+        public override string Name { get; } = "3D Rendering";
+        public override string Description { get; } = "Tests the basic 3D rendering framework";
+
         public override void Reset()
         {
             base.Reset();
 
+            Sprite3D billboardRoot;
             Add(render3DContainer = new Render3DContainer
             {
                 RelativeSizeAxes = Axes.Both,
@@ -44,7 +51,7 @@ namespace FX2.Game.Tests
                     {
                         Colour = Color4.Blue, // Z
                         Texture = testTexture,
-                        BlendingMode = BlendingMode.Additive,
+                        BlendingMode = BlendingMode.Mixture,
                         Position = new Vector3(0.0f, 0.0f, 2.0f),
                         Rotation = Quaternion.FromAxisAngle(Vector3.Up, MathHelper.Pi)
                     },
@@ -52,7 +59,7 @@ namespace FX2.Game.Tests
                     {
                         Colour = Color4.Green, // Y
                         Texture = testTexture,
-                        BlendingMode = BlendingMode.Additive,
+                        BlendingMode = BlendingMode.Mixture,
                         Position = new Vector3(0.0f, 2.0f, 0.0f),
                         Rotation = Quaternion.FromAxisAngle(Vector3.Right, MathHelper.PiOver2)
                     },
@@ -60,9 +67,31 @@ namespace FX2.Game.Tests
                     {
                         Colour = Color4.Red, // X
                         Texture = testTexture,
-                        BlendingMode = BlendingMode.Additive,
+                        BlendingMode = BlendingMode.Mixture,
                         Position = new Vector3(2.0f, 0.0f, 0.0f),
                         Rotation = Quaternion.FromAxisAngle(Vector3.Up, -MathHelper.PiOver2)
+                    },
+                    billboardRoot = new Sprite3D // Billboard
+                    {
+                        Colour = Color4.Orange,
+                        Rectangle = new RectangleF(-0.25f, -0.25f, 0.5f, 0.5f),
+                        Texture = testTexture,
+                        Billboard = true,
+                        BlendingMode = BlendingMode.Mixture,
+                        Position = new Vector3(0.0f, 0.0f, 0.0f),
+                        Rotation = Quaternion.FromAxisAngle(Vector3.Up, -MathHelper.PiOver2),
+                        Children = new Drawable3D[]
+                        {
+                            new Sprite3D  // Child Billboard
+                            {
+                                Colour = Color4.Orange, // X
+                                Texture = testTexture,
+                                Billboard = true,
+                                BlendingMode = BlendingMode.Mixture,
+                                Position = new Vector3(0.0f, 1.0f, 0.0f),
+                                Rotation = Quaternion.FromAxisAngle(Vector3.Up, -MathHelper.PiOver2)
+                            },
+                        }
                     },
                     cameraBoom = new Node
                     {
@@ -80,10 +109,18 @@ namespace FX2.Game.Tests
             testSprite1.FadeColour(Color4.LimeGreen, 1000, EasingTypes.InCubic);
             testSprite1.Loop();
 
-            Scheduler.AddDelayed(() =>
+            animation = Scheduler.AddDelayed(() =>
             {
                 testSprite.Rotation *= Quaternion.FromAxisAngle(Vector3.Forward, MathHelper.Pi * 0.001f);
+                billboardRoot.Rotation *= Quaternion.FromAxisAngle(Vector3.Right, MathHelper.Pi * 0.002f);
             }, 10.0, true);
+        }
+
+        protected override void Dispose(bool isDisposing)
+        {
+            base.Dispose(isDisposing);
+            animation?.Cancel();
+            animation = null;
         }
 
         protected override bool OnMouseDown(InputState state, MouseDownEventArgs args)

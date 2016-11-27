@@ -111,7 +111,7 @@ namespace FX2.Game.Tests
             
             if(beatmap == null) return;
 
-            playback.Position = audioTrack.CurrentTime;
+            playback.Position = audioTrack.CurrentTime / 1000.0; // ms -> s
             gameView.renderer.Position = playback.Position;
 
             foreach(var measure in playback.MeasuresInView)
