@@ -144,6 +144,11 @@ namespace FX2.Game.Beatmap
             return actualOffset + MeasureDuration * index;
         }
 
+        public double GetDivisionDuration(TimeDivision division)
+        {
+            return MeasureDuration * ((double)division.DivisionIndex / division.Division);
+        }
+
         /// <summary>
         /// Add a new measure
         /// </summary>

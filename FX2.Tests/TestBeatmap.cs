@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Remoting;
 using FX2.Game.Beatmap;
 using NUnit.Framework;
 
@@ -360,6 +361,55 @@ namespace FX2.Tests
             Assert.AreEqual(1, playback.MeasuresInView.Count);
             Assert.AreEqual(measure1, playback.MeasuresInView[0]);
             Assert.IsTrue(playback.ObjectsInView.Contains(lr));
+        }
+
+        [Test]
+        public void TestActiveObjects()
+        {
+            Beatmap beatmap;
+
+            using(var file = OpenTestMap("C18H27NO3"))
+            {
+                // Load only metadata
+                BeatmapKSH kshBeatmap = new BeatmapKSH(file);
+                beatmap = new Beatmap(kshBeatmap);
+            }
+
+            BeatmapPlayback playback = new BeatmapPlayback();
+            playback.Beatmap = beatmap;
+            playback.ViewDuration = 0.2;
+            playback.Position = 3.0;
+
+            Assert.AreEqual(2, playback.ActiveObjects.Count);
+
+            playback.Position = 13.285;
+            Assert.AreEqual(1, playback.ActiveObjects.Count);
+            Assert.IsAssignableFrom(typeof(Laser), playback.ActiveObjects[0].Object);
+            
+            // Same test but with larger view duration
+            playback.ViewDuration = 1.0;
+            Assert.AreEqual(1, playback.ActiveObjects.Count);
+            Assert.IsAssignableFrom(typeof(Laser), playback.ActiveObjects[0].Object);
+            
+            playback.Position = 25.285;
+            Assert.AreEqual(3, playback.ActiveObjects.Count);
+            var hold = playback.ActiveObjects.First(x => x.Object is Hold);
+            Assert.IsNotNull(hold);
+
+            // Test events
+            int holdCount = 3;
+            BeatmapPlayback.ObjectEventHandler handler = reference => { holdCount--; };
+            playback.ObjectDeactivated += handler;
+            playback.Position = 0.0;
+            playback.ObjectDeactivated -= handler;
+
+            Assert.AreEqual(0, holdCount);
+
+            handler = reference => { holdCount++; };
+            playback.ObjectActivated += handler;
+
+            playback.Position = 35.571;
+            Assert.AreEqual(2, holdCount);
         }
 
         [STAThread]

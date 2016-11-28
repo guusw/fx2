@@ -21,6 +21,7 @@ namespace FX2.Game.Beatmap
         private Measure currentMeasure;
 
         private List<ObjectReference> objectsInView = new List<ObjectReference>();
+        private List<ObjectReference> activeObjects = new List<ObjectReference>();
         private List<Measure> measuresInView = new List<Measure>();
         private List<Measure> allMeasures = new List<Measure>();
 
@@ -49,6 +50,11 @@ namespace FX2.Game.Beatmap
         /// Objects currently in view
         /// </summary>
         public IReadOnlyList<ObjectReference> ObjectsInView => objectsInView;
+        
+        /// <summary>
+        /// Objects whose start/end lie around the current playback position, for hold/lasers
+        /// </summary>
+        public IReadOnlyList<ObjectReference> ActiveObjects => activeObjects;
 
         /// <summary>
         /// Measures currently in view
@@ -91,6 +97,9 @@ namespace FX2.Game.Beatmap
         public event ObjectEventHandler ObjectEntered;
         public event ObjectEventHandler ObjectLeft;
 
+        public event ObjectEventHandler ObjectActivated;
+        public event ObjectEventHandler ObjectDeactivated;
+
         public event MeasureEventHandler MeasureEntered;
         public event MeasureEventHandler MeasureLeft;
 
@@ -102,6 +111,7 @@ namespace FX2.Game.Beatmap
         public void OnBeatmapModified()
         {
             beatmap = null;
+            currentMeasure = null; // Invalidate cached measure
             SetBeatmap(beatmap);
         }
         
@@ -116,6 +126,8 @@ namespace FX2.Game.Beatmap
                 this.beatmap = beatmap;
                 foreach(var obj in objectsInView)
                     OnObjectLeft(obj);
+                foreach(var obj in activeObjects)
+                    OnObjectDeactivated(obj);
 
                 objectsInView.Clear();
                 allMeasures.Clear();
@@ -276,6 +288,21 @@ namespace FX2.Game.Beatmap
             objectsInView.AddRange(addedObjects);
             measuresInView = newMeasures;
 
+            // Handle new active objects
+            foreach(var obj in addedObjects)
+            {
+                var objStart = obj.AbsolutePosition;
+                // Handle new active objects
+                if(objStart < position)
+                {
+                    if(!activeObjects.Contains(obj))
+                    {
+                        OnObjectActivated(obj);
+                        activeObjects.Add(obj);
+                    }
+                }
+            }
+
             if(objectsInView.Count == 0)
             {
                 // Update ended state
@@ -306,10 +333,40 @@ namespace FX2.Game.Beatmap
         }
 
         /// <summary>
+        /// Checks if the current measure is still valid, this acts as an optimization so that SelectMeasure doesn't have to do anything.
+        /// </summary>
+        protected bool IsCurrentMeasureValid(double position)
+        {
+            if(currentMeasure == null)
+                return false;
+
+            var measurePosition = currentMeasure.AbsolutePosition;
+            if(measurePosition > position)
+                return false;
+
+            var measureDuration = currentMeasure.TimingPoint.MeasureDuration;
+            if((measurePosition + measureDuration) < position)
+                return false;
+
+            // Skipped over to next timing point
+            if(currentMeasure.TimingPoint.Next != null && currentMeasure.TimingPoint.Next.Offset < position)
+                return false;
+
+            // Skipped over to previous timing point
+            if(currentMeasure.TimingPoint.Previous != null &&  currentMeasure.TimingPoint.Offset > position)
+                return false;
+
+            return true;
+        }
+
+        /// <summary>
         /// Select the measure containing the given position
         /// </summary>
         protected Measure SelectMeasure(double position)
         {
+            if(IsCurrentMeasureValid(position))
+                return currentMeasure;
+
             var timingPoint = SelectTimingPoint(position);
             if(timingPoint == null) return null;
 
@@ -383,6 +440,16 @@ namespace FX2.Game.Beatmap
             ObjectLeft?.Invoke(obj);
         }
 
+        private void OnObjectActivated(ObjectReference obj)
+        {
+            ObjectActivated?.Invoke(obj);
+        }
+
+        private void OnObjectDeactivated(ObjectReference obj)
+        {
+            ObjectDeactivated?.Invoke(obj);
+        }
+
         private void OnMeasureEntered(Measure measure)
         {
             MeasureEntered?.Invoke(measure);
@@ -396,21 +463,40 @@ namespace FX2.Game.Beatmap
         private void MarkPassedObjects()
         {
             // Call OnObjectLeft on all passed objects
+            // Also handle addition/removal of active objects
             for(int i = 0; i < objectsInView.Count;)
             {
-                if(GetObjectEndingPosition(objectsInView[i]) < position ||
-                   GetObjectStartingPosition(objectsInView[i]) > endPosition)
+                double startingPosition = GetObjectStartingPosition(objectsInView[i]);
+                double endingPosition = GetObjectEndingPosition(objectsInView[i]);
+                if(endingPosition < position ||
+                   startingPosition > endPosition)
                 {
+                    if(ActiveObjects.Contains(objectsInView[i]))
+                    {
+                        OnObjectDeactivated(objectsInView[i]);
+                        activeObjects.Remove(objectsInView[i]);
+                    }
+
                     OnObjectLeft(objectsInView[i]);
                     objectsInView.RemoveAt(i);
                 }
                 else
                 {
+                    // Handle new active objects
+                    if(startingPosition < position)
+                    {
+                        if(!activeObjects.Contains(objectsInView[i]))
+                        {
+                            OnObjectActivated(objectsInView[i]);
+                            activeObjects.Add(objectsInView[i]);
+                        }
+                    }
+
                     i++;
                 }
             }
 
-            // Call OnObjectLeft on all passed measures
+            // Call OnMeasureLeft on all passed measures
             for(int i = 0; i < measuresInView.Count;)
             {
                 var measureEnd = measuresInView[i].AbsolutePosition + measuresInView[i].TimingPoint.MeasureDuration;

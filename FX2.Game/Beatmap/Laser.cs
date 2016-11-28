@@ -29,6 +29,33 @@ namespace FX2.Game.Beatmap
         {
             return $"{base.ToString()}, Root, {nameof(IsExtended)}: {IsExtended}";
         }
+
+        public float Sample(double time)
+        {
+            var start = Root;
+            if(start.AbsolutePosition > time)
+                return HorizontalPosition;
+
+            while(true)
+            {
+                var currentLaser = (Laser)start.Object;
+                var next = currentLaser.Next;
+                if(next == null)
+                    return currentLaser.HorizontalPosition;
+                var nextLaser = (Laser)next.Object;
+
+                double currentStartTime = start.AbsolutePosition;
+                if(start.AbsolutePosition < time)
+                {
+                    double currentEndTime = next.AbsolutePosition;
+                    float t = (float)((time - currentStartTime) / (currentEndTime-currentStartTime));
+                    return (nextLaser.HorizontalPosition - currentLaser.HorizontalPosition) * t +
+                           currentLaser.HorizontalPosition;
+                }
+
+                start = next;
+            }
+        }
     }
 
     /// <summary>
@@ -87,13 +114,16 @@ namespace FX2.Game.Beatmap
         /// <summary>
         /// Is the segment following this control point an instant segment
         /// </summary>
-        public bool IsInstant()
+        public bool IsInstant
         {
-            if(Next == null)
-                return false;
+            get
+            {
+                if(Next == null)
+                    return false;
 
-            var nextLaser = Next.Object as Laser;
-            return nextLaser.Previous.Measure == Next.Measure && Next.Object.Position == Position;
+                var nextLaser = Next.Object as Laser;
+                return nextLaser.Previous.Measure == Next.Measure && Next.Object.Position == Position;
+            }
         }
 
         public override string ToString()

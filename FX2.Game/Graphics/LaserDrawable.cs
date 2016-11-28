@@ -80,7 +80,7 @@ namespace FX2.Game.Graphics
                 if(laser.Previous != null)
                 {
                     var previous = laser.Previous.Object as Laser;
-                    if(previous.IsInstant())
+                    if(previous.IsInstant)
                     {
                         // TODO: Calculate correct slam length/duration
                         float skip = 0.05f / length;
