@@ -274,7 +274,7 @@ namespace FX2.Tests
         }
 
         [Test]
-        public void CompleteMapIteration()
+        public void TestCompleteMapIteration()
         {
             Beatmap beatmap;
 
