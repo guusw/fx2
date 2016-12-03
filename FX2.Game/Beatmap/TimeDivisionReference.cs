@@ -30,7 +30,7 @@ namespace FX2.Game.Beatmap
 
         public override string ToString()
         {
-            return $"Division Reference {Position.DivisionIndex}/{Position.Division} - Measure {Measure.Index}";
+            return $"Division Reference {Position.Numerator}/{Position.Denominator} - Measure {Measure.Index}";
         }
         
         public override bool Equals(object obj)

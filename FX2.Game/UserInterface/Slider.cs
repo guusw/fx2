@@ -89,7 +89,7 @@ namespace FX2.Game.UserInterface
                 },
                 foreground = new Box
                 {
-                    Depth = 1.0f,
+                    Depth = -1.0f,
                     RelativeSizeAxes = Axes.Both,
                     Size = new Vector2((float)NormalizedValue, 1.0f),
                     Colour = ForegroundColor,

@@ -2,6 +2,7 @@
 // Licensed under the MIT License(MIT)
 // See "LICENSE.txt" for more information
 
+using System;
 using System.Collections.Generic;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Batches;
@@ -38,9 +39,9 @@ namespace FX2.Game.Graphics
 
         private bool NeedsRoundedShader => GLWrapper.IsMaskingActive || InflationAmount != Vector2.Zero;
         
-        public override void Draw(IVertexBatch vertexBatch)
+        public override void Draw(Action<TexturedVertex2D> vertexAction)
         {
-            base.Draw(vertexBatch);
+            base.Draw(vertexAction);
 
             if(Texture == null || Texture.IsDisposed)
                 return;
@@ -68,7 +69,7 @@ namespace FX2.Game.Graphics
             // TODO: Draw
             foreach(var part in Parts)
             {
-                Texture.Draw(part.ScreenSpaceQuad, DrawInfo.Colour, null, vertexBatch as VertexBatch<TexturedVertex2D>,
+                Texture.Draw(part.ScreenSpaceQuad, DrawInfo.Colour, null, vertexAction,
                     new Vector2(InflationAmount.X / DrawRectangle.Width, InflationAmount.Y / DrawRectangle.Height));
                 //Texture.Draw(part.ScreenSpaceQuad, ColourInfo.SingleColour(Colour), part.TextureRectangle);
             }

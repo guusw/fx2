@@ -25,7 +25,7 @@ namespace FX2.Game.Graphics
 
             trackBase = new Box
             {
-                Depth = -1.0f,
+                Depth = 10.0f,
                 Origin = Anchor.BottomCentre,
                 RelativePositionAxes = Axes.Both,
                 Position = new Vector2(0.5f, 1.0f),

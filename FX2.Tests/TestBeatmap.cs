@@ -77,6 +77,12 @@ namespace FX2.Tests
                 var t0 = m0.Ticks[0];
                 for(int i = 0; i < 6; i++)
                     Assert.AreEqual('0', t0.Button[i]);
+
+                // Check for custom effects
+                Assert.AreEqual(6, kshBeatmap.EffectDefinitions.Count);
+                Assert.AreEqual("WG", kshBeatmap.EffectDefinitions[3].Name);
+                Assert.AreEqual(EffectType.UserDefined3, kshBeatmap.EffectDefinitions[3].Type);
+                Assert.Contains("type", kshBeatmap.EffectDefinitions[3].Options.Keys);
             }
         }
 
@@ -287,34 +293,197 @@ namespace FX2.Tests
 
             BeatmapPlayback playback = new BeatmapPlayback();
             playback.Beatmap = beatmap;
-            playback.ViewDuration = 1.0;
 
-            // Store objects
-            HashSet<ObjectReference> objectSet = new HashSet<ObjectReference>(playback.ObjectsInView);
-            int passedObjects = 0;
+            // Test multiple view sizes
+            for(int i = 0; i < 5; i++)
+            {
+                playback.ViewDuration = 0.2 + i * 0.15;
+                
+                HashSet<ObjectReference> allObjects = new HashSet<ObjectReference>();
+                HashSet<ObjectReference> allActiveObjects = new HashSet<ObjectReference>();
 
-            playback.ObjectEntered += reference =>
-            {
-                Assert.That(objectSet, Has.No.Member(reference));
-                objectSet.Add(reference);
-                passedObjects++;
-            };
-            playback.ObjectLeft += reference =>
-            {
-                Assert.That(objectSet, Has.Member(reference));
-                objectSet.Remove(reference);
-            };
+                // Store objects
+                HashSet<ObjectReference> objectSet = new HashSet<ObjectReference>();
+                int passedObjects = 0;
 
-            // Simulate game loop
-            double timeStep = 1.0 / 240.0;
-            while(!playback.HasEnded)
+                HashSet<ObjectReference> activeObjects = new HashSet<ObjectReference>();
+                int activeObjectCounter = 0;
+
+                playback.ObjectEntered += reference =>
+                {
+                    Assert.That(allObjects, Has.No.Member(reference));
+                    allObjects.Add(reference);
+
+                    Assert.That(objectSet, Has.No.Member(reference));
+                    objectSet.Add(reference);
+                    passedObjects++;
+                };
+                playback.ObjectLeft += reference =>
+                {
+                    Assert.That(objectSet, Has.Member(reference));
+                    objectSet.Remove(reference);
+                };
+
+                playback.ObjectActivated += reference =>
+                {
+                    Assert.That(allActiveObjects, Has.No.Member(reference));
+                    allActiveObjects.Add(reference);
+
+                    activeObjectCounter++;
+                    activeObjects.Add(reference);
+                };
+                playback.ObjectDeactivated += reference =>
+                {
+                    activeObjectCounter--;
+                    activeObjects.Remove(reference);
+                };
+                
+                // Simulate game loop
+                double timeStep = 1.0 / 240.0;
+                while(!playback.HasEnded)
+                {
+                    playback.Position += timeStep;
+                }
+
+                Assert.Greater(playback.LastObject.AbsolutePosition, 70.0);
+                Assert.Greater(playback.Position, playback.LastObject.AbsolutePosition);
+                Assert.IsEmpty(objectSet);
+                Assert.IsEmpty(activeObjects);
+                Assert.AreEqual(0, activeObjectCounter);
+            }
+        }
+
+        [Test]
+        public void TestReverseMapIteration()
+        {
+            Beatmap beatmap;
+
+            using(var file = OpenTestMap("C18H27NO3"))
             {
-                playback.Position += timeStep;
+                // Load only metadata
+                BeatmapKSH kshBeatmap = new BeatmapKSH(file);
+                beatmap = new Beatmap(kshBeatmap);
+            }
+            
+            BeatmapPlayback playback = new BeatmapPlayback();
+            playback.Beatmap = beatmap;
+
+            // Test multiple view sizes
+            for(int i = 0; i < 5; i++)
+            {
+                playback.ViewDuration = 0.1 + 0.1 * i;
+                playback.Position = playback.LastObject.AbsolutePosition + 2.0;
+
+                // Store objects
+                HashSet<ObjectReference> objectSet = new HashSet<ObjectReference>(playback.ObjectsInView);
+                int passedObjects = 0;
+
+                HashSet<ObjectReference> activeObjects = new HashSet<ObjectReference>();
+                int activeObjectCounter = 0;
+
+                playback.ObjectEntered += reference =>
+                {
+                    Assert.That(objectSet, Has.No.Member(reference));
+                    objectSet.Add(reference);
+                    passedObjects++;
+                };
+                playback.ObjectLeft += reference =>
+                {
+                    Assert.That(objectSet, Has.Member(reference));
+                    objectSet.Remove(reference);
+                };
+
+                playback.ObjectActivated += reference =>
+                {
+                    activeObjectCounter++;
+                    activeObjects.Add(reference);
+                };
+                playback.ObjectDeactivated += reference =>
+                {
+                    activeObjectCounter--;
+                    activeObjects.Remove(reference);
+                };
+
+
+                // Simulate game loop
+                double timeStep = 1.0 / 240.0;
+                int step = 0;
+                while(playback.Position > 0.0)
+                {
+                    playback.Position -= timeStep;
+                    step++;
+                }
+
+                Assert.IsEmpty(objectSet);
+                Assert.IsEmpty(activeObjects);
+                Assert.AreEqual(0, activeObjectCounter);
+            }
+        }
+
+        [Test]
+        public void TestCompareForwardBackward()
+        {
+            Beatmap beatmap;
+
+            using(var file = OpenTestMap("C18H27NO3"))
+            {
+                // Load only metadata
+                BeatmapKSH kshBeatmap = new BeatmapKSH(file);
+                beatmap = new Beatmap(kshBeatmap);
             }
 
-            Assert.Greater(playback.LastObject.AbsolutePosition, 70.0);
-            Assert.Greater(playback.Position, playback.LastObject.AbsolutePosition);
-            Assert.IsEmpty(objectSet);
+            BeatmapPlayback playback = new BeatmapPlayback();
+            playback.Beatmap = beatmap;
+            playback.ViewDuration = 0.2;
+
+            List<int> results = new List<int>();
+            
+            int passedObjects = 0;
+            int activatedObjects = 0;
+            
+            playback.ObjectEntered += reference =>
+            {
+                passedObjects++;
+            };
+            playback.ObjectActivated += reference =>
+            {
+                activatedObjects++;
+            };
+
+            // Test multiple view sizes
+            for(int i = 0; i < 2; i++)
+            {
+
+                // Simulate game loop
+                double timeStep = 1.0 / 240.0;
+                if(i == 0)
+                {
+                    playback.Position = 0.0;
+                    passedObjects = 0;
+                    activatedObjects = 0;
+                    while(!playback.HasEnded)
+                    {
+                        playback.Position += timeStep;
+                    }
+                }
+                else
+                {
+                    playback.Position = playback.LastObject.AbsolutePosition + 2.0;
+                    passedObjects = 0;
+                    activatedObjects = 0;
+                    while(playback.Position >= 0.0)
+                    {
+                        playback.Position -= timeStep;
+                    }
+                }
+
+                results.Add(passedObjects);
+                results.Add(activatedObjects);
+            }
+            
+            // Check reverse and forward results
+            Assert.AreEqual(results[0], results[2]);
+            Assert.AreEqual(results[1], results[3]);
         }
 
         [Test]
@@ -407,16 +576,23 @@ namespace FX2.Tests
 
             handler = reference => { holdCount++; };
             playback.ObjectActivated += handler;
-
+        
             playback.Position = 35.571;
             Assert.AreEqual(2, holdCount);
+            
+            // Some more seeks to be sure
+            playback.Position = 25.285;
+            Assert.AreEqual(3, playback.ActiveObjects.Count);
+            
+            playback.Position = 35.571;
+            Assert.AreEqual(2, playback.ActiveObjects.Count);
         }
 
         [STAThread]
         static void Main()
         {
             TestBeatmap test = new TestBeatmap();
-            test.TestLaserVisiblity();
+            test.TestReverseMapIteration();
         }
     }
 }

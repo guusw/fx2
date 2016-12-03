@@ -28,16 +28,41 @@ namespace FX2.Game.Beatmap
 
         public static readonly Dictionary<char, byte> LaserCharacters;
 
+        public static readonly Dictionary<string, EffectType> EffectTypes = new Dictionary<string, EffectType>
+        {
+            ["fx;bitc"] = EffectType.BitCrusher,
+            ["bitc"] = EffectType.BitCrusher,
+            ["lpf1"] = EffectType.LowPassFilter,
+            ["peak"] = EffectType.PeakingFilter,
+            ["hpf1"] = EffectType.HighPassFilter,
+
+            // New style effect types
+            ["Retrigger"] = EffectType.Retrigger,
+            ["Gate"] = EffectType.Gate,
+            ["Flanger"] = EffectType.Flanger,
+            ["Wobble"] = EffectType.Wobble,
+            ["SideChain"] = EffectType.SideChain,
+            ["Phaser"] = EffectType.Phaser,
+            ["Echo"] = EffectType.Echo,
+            ["BitCrusher"] = EffectType.BitCrusher,
+            ["TapeStop"] = EffectType.TapeStop,
+        };
+
         /// <summary>
         /// Global beatmap options and metadata
         /// </summary>
         public readonly Dictionary<string, string> Options = new Dictionary<string, string>();
 
         /// <summary>
+        /// Custom effect types
+        /// </summary>
+        public readonly List<EffectDefinition> EffectDefinitions = new List<EffectDefinition>();
+
+        /// <summary>
         /// All the measures in the beatmap
         /// </summary>
         public readonly List<Measure> Measures = new List<Measure>(2000);
-
+        
         static BeatmapKSH()
         {
             LaserCharacters = new Dictionary<char, byte>();
@@ -51,6 +76,11 @@ namespace FX2.Game.Beatmap
             AddRange('0', '9');
             AddRange('A', 'Z');
             AddRange('a', 'o');
+        }
+        
+        public static EffectType ParseEffectType(string name)
+        {
+            return EffectTypes[name];
         }
 
         /// <summary>
@@ -100,6 +130,7 @@ namespace FX2.Game.Beatmap
             Tick tick = new Tick();
             Position time = new Position();
             List<Tick> ticks = new List<Tick>(64);
+            EffectType customEffectType = EffectType.UserDefined0;
 
             while(true)
             {
@@ -107,6 +138,9 @@ namespace FX2.Game.Beatmap
                     return; // End of file
 
                 string line = parser.Line;
+                if(line.Length == 0)
+                    continue; // Skip empty lines
+
                 if(line == Separator) // End this block
                 {
                     measure.Ticks = ticks.ToArray();
@@ -121,9 +155,36 @@ namespace FX2.Game.Beatmap
                     if(line[0] == '#') // Detect custom effect type
                     {
                         string[] split = line.Split(' ');
-                        if(split.Length != 3) parser.Throw("Invalid custom effect definition");
 
-                        // TODO: Effect parsing
+                        // Load custom effect type
+                        if(split[0] == "#define_fx")
+                        {
+                            if(split.Length != 3) parser.Throw("Invalid custom effect definition");
+                            EffectDefinition effectDefinition = new EffectDefinition();
+                            effectDefinition.Name = split[1];
+                            effectDefinition.Type = customEffectType;
+                            effectDefinition.BaseType = EffectType.UserDefined0;
+
+                            string[] options = split[2].Split(';');
+                            foreach(var option in options)
+                            {
+                                string[] kvp = option.Split('=');
+                                if(kvp.Length != 2)
+                                    parser.Throw($"Invalid effect key/value pair \"{option}\"");
+
+                                if(kvp[0] == "type")
+                                    effectDefinition.BaseType = ParseEffectType(kvp[1]);
+
+                                effectDefinition.Options.Add(kvp[0], kvp[1]);   
+                            }
+
+                            if(effectDefinition.BaseType == EffectType.UserDefined0)
+                                parser.Throw($"Missing base effect type for custom effect definition \"{effectDefinition.Name}\"");
+
+                            EffectDefinitions.Add(effectDefinition);
+
+                            customEffectType = (EffectType)((int)customEffectType + 1);
+                        }
                     }
                     else if(line.Contains("=")) // Detect options
                     {
@@ -157,8 +218,8 @@ namespace FX2.Game.Beatmap
                 }
             }
         }
-
-        byte TranslateLaserCharacter(char source)
+        
+        private byte TranslateLaserCharacter(char source)
         {
             if(source == ':')
                 return Tick.LaserLerp;
@@ -179,9 +240,19 @@ namespace FX2.Game.Beatmap
             public EffectType Type;
 
             /// <summary>
+            /// Base type for the effect
+            /// </summary>
+            public EffectType BaseType;
+
+            /// <summary>
+            /// Name of this custom effect
+            /// </summary>
+            public string Name;
+
+            /// <summary>
             /// Options for this effect
             /// </summary>
-            public Dictionary<string, string> Options;
+            public Dictionary<string, string> Options = new Dictionary<string, string>();
         }
 
         /// <summary>

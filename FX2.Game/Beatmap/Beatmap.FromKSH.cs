@@ -331,7 +331,7 @@ namespace FX2.Game.Beatmap
                 var c = buttonCharacter;
                 if(c == 'B')
                 {
-                    state.EffectType = EffectType.Bitcrush;
+                    state.EffectType = EffectType.BitCrusher;
                     state.EffectParameter0 = currentButtonEffectParameters[index][0];
                 }
                 else if(c >= 'G' && c <= 'L') // Gate 4/8/16/32/12/24

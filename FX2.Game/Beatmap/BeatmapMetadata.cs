@@ -56,7 +56,7 @@ namespace FX2.Game.Beatmap
         public double PreviewOffset = 0.0;
 
         /// <summary>
-        /// Length of the previewed area
+        /// Duration of the previewed area
         /// </summary>
         public double PreviewDuration = 0.0;
     }

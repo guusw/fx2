@@ -130,7 +130,7 @@ namespace FX2.Game.Tests
 
         protected override void PopIn()
         {
-            task = Scheduler.AddDelayed(UpdateTask, 100.0, true);
+            task = Scheduler.AddDelayed(UpdateTask, 10.0, true);
             FadeIn(100);
         }
 

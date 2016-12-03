@@ -2,7 +2,10 @@
 // Licensed under the MIT License(MIT)
 // See "LICENSE.txt" for more information
 
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using FX2.Game.Beatmap.Effects;
 
 namespace FX2.Game.Beatmap
 {
@@ -21,9 +24,14 @@ namespace FX2.Game.Beatmap
         /// </summary>
         public readonly List<TimingPoint> TimingPoints = new List<TimingPoint>();
 
+        /// <summary>
+        /// Settings for effects that are used, indexed by <see cref="EffectType"/>
+        /// </summary>
+        public readonly List<EffectSettings> EffectSettings = new List<EffectSettings>();
+
         public Beatmap()
         {
-
+            RegisterDefaultEffectSettings();
         }
 
         /// <summary>
@@ -72,7 +80,47 @@ namespace FX2.Game.Beatmap
                         }
                     }
                 }
-            }   
+            }
+        }
+
+        public void RegisterDefaultEffectSettings()
+        {
+            RegisterEffect(EffectType.BitCrusher, new BitCrusherSettings());
+            RegisterEffect(EffectType.Retrigger, new RetriggerSettings());
+            RegisterEffect(EffectType.Echo, new EchoSettings());
+            RegisterEffect(EffectType.Gate, new RetriggerSettings {LoopCount = 1});
+            RegisterEffect(EffectType.Flanger, new FlangerSettings());
+            RegisterEffect(EffectType.HighPassFilter, new BiQuadFilterSettings
+            {
+                FilterType = BiQuadFilterType.HighPass
+            });
+            RegisterEffect(EffectType.LowPassFilter, new BiQuadFilterSettings
+            {
+                FilterType = BiQuadFilterType.LowPass
+            });
+            RegisterEffect(EffectType.PeakingFilter, new BiQuadFilterSettings
+            {
+                FilterType = BiQuadFilterType.Peaking
+            });
+            RegisterEffect(EffectType.Phaser, new PhaserSettings());
+            RegisterEffect(EffectType.SideChain, new SideChainSettings());
+            RegisterEffect(EffectType.Wobble, new SideChainSettings());
+        }
+
+        public void RegisterEffect(EffectType effectType, EffectSettings settings)
+        {
+            while(EffectSettings.Count < (int)effectType)
+                EffectSettings.Add(null);
+
+            EffectSettings[(int)effectType] = settings;
+        }
+
+        public EffectSettings GetEffectSettings(EffectType effectType)
+        {
+            if((int)effectType >= EffectSettings.Count)
+                return null;
+
+            return EffectSettings[(int)effectType];
         }
     }
 }

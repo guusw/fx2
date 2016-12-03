@@ -91,7 +91,7 @@ namespace FX2.Tests
 
             using(BeatmapDatabase database = new BeatmapDatabase("large_database"))
             {
-                string testPath = @"."; // Note: replace this with your own large KShoot folder for this test to be useful
+                string testPath = Environment.CurrentDirectory; // Note: replace this with your own large KShoot folder for this test to be useful
 
                 timer.Start();
                 database.AddSearchPath(testPath);

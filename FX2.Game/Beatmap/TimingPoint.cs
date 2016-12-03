@@ -146,7 +146,7 @@ namespace FX2.Game.Beatmap
 
         public double GetDivisionDuration(TimeDivision division)
         {
-            return MeasureDuration * ((double)division.DivisionIndex / division.Division);
+            return MeasureDuration * ((double)division.Numerator / division.Denominator);
         }
 
         /// <summary>

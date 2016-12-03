@@ -77,6 +77,11 @@ namespace FX2.Game.Beatmap
         public ObjectReference LastObject { get; private set; }
 
         /// <summary>
+        /// Last activated timing point
+        /// </summary>
+        public TimingPoint CurrentTimingPoint { get; private set; }
+
+        /// <summary>
         /// View distance in seconds
         /// </summary>
         public double ViewDuration
@@ -192,6 +197,7 @@ namespace FX2.Game.Beatmap
                 return;
 
             currentMeasure = SelectMeasure(position);
+            CurrentTimingPoint = currentMeasure?.TimingPoint;
 
             var measure = currentMeasure;
             var timingPoint = measure.TimingPoint;
@@ -232,9 +238,8 @@ namespace FX2.Game.Beatmap
                         // Add this object to the view list
                         if(!objectsInView.Contains(objRef))
                         {
-                            OnObjectEntered(objRef);
+                            addedObjects.Add(objRef);
                         }
-                        addedObjects.Add(objRef);
                     }
                 }
 
@@ -249,9 +254,8 @@ namespace FX2.Game.Beatmap
                         // Add this object to the view list
                         if(!objectsInView.Contains(objRef))
                         {
-                            OnObjectEntered(objRef);
+                            addedObjects.Add(objRef);
                         }
-                        addedObjects.Add(objRef);
                     }
                 }
 
@@ -291,6 +295,8 @@ namespace FX2.Game.Beatmap
             // Handle new active objects
             foreach(var obj in addedObjects)
             {
+                OnObjectEntered(obj);
+
                 var objStart = obj.AbsolutePosition;
                 // Handle new active objects
                 if(objStart < position)

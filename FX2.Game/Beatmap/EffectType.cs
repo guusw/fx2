@@ -11,16 +11,14 @@ namespace FX2.Game.Beatmap
         Phaser,
         Gate,
         TapeStop,
-        Bitcrush,
+        BitCrusher,
         Wobble,
         SideChain,
         Echo,
-        Panning,
-        PitchShift,
         LowPassFilter,
         HighPassFilter,
         PeakingFilter,
-        UserDefined = 0x40, // This ID or higher is user for user defined effects inside map objects
+        UserDefined0 = 0x40, // This ID or higher is user for user defined effects inside map objects
         UserDefined1,       // Keep this ID at least a few ID's away from the normal effect so more native effects can be added later
         UserDefined2,
         UserDefined3,

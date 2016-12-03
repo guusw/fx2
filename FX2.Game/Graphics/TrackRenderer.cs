@@ -35,7 +35,7 @@ namespace FX2.Game.Graphics
         private Dictionary<ObjectReference, TrackRendererData> objects = new Dictionary<ObjectReference, TrackRendererData>();
 
         /// <summary>
-        /// Length of the duration viewed, in seconds
+        /// Duration of the duration viewed, in seconds
         /// </summary>
         public double ViewDuration
         {

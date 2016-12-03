@@ -22,6 +22,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -30,6 +31,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="OpenTK">
@@ -57,12 +59,34 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Audio\BiQuadFilter.cs" />
+    <Compile Include="Audio\BitCrusher.cs" />
+    <Compile Include="Audio\Echo.cs" />
+    <Compile Include="Audio\EffectController.cs" />
+    <Compile Include="Audio\Flanger.cs" />
+    <Compile Include="Audio\Phaser.cs" />
+    <Compile Include="Audio\Retrigger.cs" />
+    <Compile Include="Audio\SideChain.cs" />
+    <Compile Include="Audio\TapeStop.cs" />
     <Compile Include="Beatmap\Beatmap.cs" />
     <Compile Include="Beatmap\Beatmap.FromKSH.cs" />
     <Compile Include="Beatmap\BeatmapKSH.cs" />
     <Compile Include="Beatmap\BeatmapMetadata.cs" />
     <Compile Include="Beatmap\BeatmapPlayback.cs" />
     <Compile Include="Beatmap\Button.cs" />
+    <Compile Include="Beatmap\Effects\BitCrusherSettings.cs" />
+    <Compile Include="Beatmap\Effects\EchoSettings.cs" />
+    <Compile Include="Beatmap\Effects\EffectParameterRange.cs" />
+    <Compile Include="Beatmap\Effects\EffectState.cs" />
+    <Compile Include="Beatmap\Effects\EffectTimeParameter.cs" />
+    <Compile Include="Beatmap\Effects\BiQuadFilterSettings.cs" />
+    <Compile Include="Beatmap\Effects\FlangerSettings.cs" />
+    <Compile Include="Beatmap\Effects\PhaserSettings.cs" />
+    <Compile Include="Beatmap\Effects\PlaybackContext.cs" />
+    <Compile Include="Beatmap\Effects\RetriggerSettings.cs" />
+    <Compile Include="Beatmap\Effects\SideChainSettings.cs" />
+    <Compile Include="Beatmap\Effects\TapeStopSettings.cs" />
+    <Compile Include="Beatmap\Effects\WobbleSettings.cs" />
     <Compile Include="Beatmap\EffectType.cs" />
     <Compile Include="Beatmap\Hold.cs" />
     <Compile Include="Beatmap\Laser.cs" />
@@ -72,6 +96,7 @@
     <Compile Include="Beatmap\TimeDivision.cs" />
     <Compile Include="Beatmap\TimeDivisionReference.cs" />
     <Compile Include="Beatmap\TimingPoint.cs" />
+    <Compile Include="Beatmap\Effects\EffectSettings.cs" />
     <Compile Include="ColorExtensions.cs" />
     <Compile Include="Database\SetIndex.cs" />
     <Compile Include="Database\BeatmapDatabase.cs" />
@@ -98,6 +123,7 @@
     <Compile Include="Tests\Test3D.cs" />
     <Compile Include="Tests\TestBeatmap.cs" />
     <Compile Include="Tests\TestParticles.cs" />
+    <Compile Include="Tests\TestTrack3D.cs" />
     <Compile Include="UserInterface\FXCursorContainer.cs" />
     <Compile Include="Graphics\GameRenderView.cs" />
     <Compile Include="UserInterface\Slider.cs" />

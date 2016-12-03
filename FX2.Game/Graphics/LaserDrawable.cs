@@ -192,10 +192,10 @@ namespace FX2.Game.Graphics
         private void load(ShaderManager shaders)
         {
             if(TextureShader == null)
-                TextureShader = shaders?.Load(new ShaderDescriptor(VertexShaderDescriptor.Texture2D, FragmentShaderDescriptor.Texture));
+                TextureShader = shaders?.Load(VertexShaderDescriptor.Texture2D, FragmentShaderDescriptor.Texture);
 
             if(RoundedTextureShader == null)
-                RoundedTextureShader = shaders?.Load(new ShaderDescriptor(VertexShaderDescriptor.Texture2D, FragmentShaderDescriptor.TextureRounded));
+                RoundedTextureShader = shaders?.Load(VertexShaderDescriptor.Texture2D, FragmentShaderDescriptor.TextureRounded);
         }
         
     }

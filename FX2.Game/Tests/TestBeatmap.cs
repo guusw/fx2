@@ -5,6 +5,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using FX2.Game.Audio;
 using FX2.Game.Beatmap;
 using FX2.Game.Graphics;
 using osu.Framework;
@@ -28,6 +29,7 @@ namespace FX2.Game.Tests
         private BeatmapPlayback playback = new BeatmapPlayback();
         private AudioTrack audioTrack;
         private GameRenderView gameView;
+        private EffectController effectController = new EffectController();
 
         private ControllerWindow controllerWindow;
         private FileStream audioTrackStream;
@@ -70,15 +72,22 @@ namespace FX2.Game.Tests
             beatmap = LoadTestBeatmap("C18H27NO3", out beatmapRootPath);
             //beatmap = LoadTestBeatmap("soflan", out beatmapRootPath, "two");
             //beatmap = LoadTestBeatmap("bb", out beatmapRootPath, "grv");
+            //beatmap = LoadTestBeatmap("cc", out beatmapRootPath, "grv");
             playback.Beatmap = beatmap;
-            playback.ViewDuration = 0.8f;
+            playback.ViewDuration = 0.4f;
 
             // Load beatmap audio
             string audioPath = Path.Combine(beatmapRootPath, beatmap.Metadata.AudioPath);
             audioTrackStream = File.Open(audioPath, FileMode.Open);
             audioTrack = new AudioTrackBass(audioTrackStream, false);
             
-            //audioTrack.Start();
+            //var retrigger = new Retrigger();
+            //retrigger.Duration = beatmap.TimingPoints[0].GetDivisionDuration(new TimeDivision(1, 4));
+            //retrigger.Gating = 0.25f;
+            //retrigger.LoopCount = 4;
+            //audioTrack.AddDsp(retrigger);
+            
+            audioTrack.Start();
             
             Add(gameView = new GameRenderView
             {
@@ -94,6 +103,8 @@ namespace FX2.Game.Tests
 
             Add(controllerWindow = new ControllerWindow(audioTrack, playback));
             controllerWindow.Show();
+
+            effectController.Initializer(playback, audioTrack);
         }
 
         protected override bool OnKeyDown(InputState state, KeyDownEventArgs args)
@@ -114,6 +125,8 @@ namespace FX2.Game.Tests
             playback.Position = audioTrack.CurrentTime / 1000.0; // ms -> s
             gameView.renderer.Position = playback.Position;
 
+            effectController.Update();
+
             foreach(var measure in playback.MeasuresInView)
             {
                 for(int i = 0; i < measure.TimingPoint.Numerator; i++)
@@ -133,6 +146,7 @@ namespace FX2.Game.Tests
             base.Dispose(isDisposing);
             audioTrack?.Dispose();
             audioTrackStream?.Dispose();
+            effectController?.Dispose();
         }
 
         [BackgroundDependencyLoader]

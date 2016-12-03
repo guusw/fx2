@@ -219,11 +219,16 @@ namespace FX2.Game.Database
 
             sqliteConnection.Table<DifficultyIndex>().ForEach(x =>
             {
-                difficulties.Add(x.Id, x);
-                // Add sets to it's appropriate difficulty
-                sets[x.SetId].Difficulties.Add(x);
+                SetIndex set;
+                if(sets.TryGetValue(x.SetId, out set))
+                {
+                    difficulties.Add(x.Id, x);
 
-                nextDifficultyId = Math.Max(nextDifficultyId, x.Id + 1);
+                    // Add sets to it's appropriate difficulty
+                    sets[x.SetId].Difficulties.Add(x);
+
+                    nextDifficultyId = Math.Max(nextDifficultyId, x.Id + 1);
+                } 
             });
         }
         

@@ -10,6 +10,9 @@ using OpenTK.Platform;
 
 namespace FX2.Game.Beatmap
 {
+    /// <summary>
+    /// Defines a segment of time of a single measure using a Numerator and Denominator
+    /// </summary>
     public struct TimeDivision
     {
         /// <summary>
@@ -21,26 +24,30 @@ namespace FX2.Game.Beatmap
         /// Ending position
         /// </summary>
         public static readonly TimeDivision End = new TimeDivision(1, 1);
+        
+        /// <summary>
+        /// Number of segments inside the measure to get the length of this division
+        /// </summary>
+        public ushort Numerator;
 
         /// <summary>
-        /// Division of the measure
+        /// Number of segments the measure is divided in
         /// </summary>
-        public ushort Division;
-
-        /// <summary>
-        /// Number of divisions inside the measure to get the position of this object
-        /// </summary>
-        public int DivisionIndex;
-
+        public ushort Denominator;
+        
         /// <summary>
         /// 0-1 value of position inside the measure
         /// </summary>
-        public double Relative => (double)DivisionIndex / (double)Division;
+        public double Relative => (double)Numerator / (double)Denominator;
 
-        public TimeDivision(int divisionIndex, int division)
+        public TimeDivision(int numerator, int denominator) : this((ushort)numerator, (ushort)denominator)
         {
-            DivisionIndex = divisionIndex;
-            Division = (ushort)division;
+        }
+
+        public TimeDivision(ushort numerator, ushort denominator)
+        {
+            Numerator = numerator;
+            Denominator = denominator;
         }
 
         public static bool operator ==(TimeDivision left, TimeDivision right)
@@ -55,10 +62,10 @@ namespace FX2.Game.Beatmap
 
         public bool Equals(TimeDivision other)
         {
-            if(Division == other.Division)
-                return DivisionIndex == other.DivisionIndex;
+            if(Denominator == other.Denominator)
+                return Numerator == other.Numerator;
 
-            return Division * DivisionIndex == other.Division * other.DivisionIndex;
+            return Denominator * Numerator == other.Denominator * other.Numerator;
         }
 
         public override bool Equals(object obj)
@@ -72,21 +79,21 @@ namespace FX2.Game.Beatmap
         {
             unchecked
             {
-                return (Division.GetHashCode() * 397) ^ DivisionIndex;
+                return (Denominator.GetHashCode() * 397) ^ Numerator;
             }
         }
 
         public int CompareTo(TimeDivision other)
         {
-            if(Division == other.Division)
-                return DivisionIndex.CompareTo(other.DivisionIndex);
+            if(Denominator == other.Denominator)
+                return Numerator.CompareTo(other.Numerator);
 
-            return (other.Division * DivisionIndex).CompareTo(Division * other.DivisionIndex);
+            return (other.Denominator * Numerator).CompareTo(Denominator * other.Numerator);
         }
 
         public override string ToString()
         {
-            return $"Division {DivisionIndex}/{Division}";
+            return $"Division {Numerator}/{Denominator}";
         }
     }
 }

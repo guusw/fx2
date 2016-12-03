@@ -39,7 +39,7 @@ namespace FX2.Game.Graphics
                     Position = pos,
                     RelativeSizeAxes = Axes.X,
                     Size = size,
-                    Depth = 4.0f,
+                    Depth = 0.0f,
                     EdgeSmoothness = Vector2.Zero,
                 });
             }
@@ -61,7 +61,7 @@ namespace FX2.Game.Graphics
                     RelativeSizeAxes = Axes.Both,
                     Size = size,
                     EdgeSmoothness = Vector2.Zero,
-                    Depth = (hold.Index < 4) ? 2.0f : 1.0f,
+                    Depth = (hold.Index < 4) ? 1.0f : 2.0f,
                 }, duration);
             }
 
@@ -85,8 +85,8 @@ namespace FX2.Game.Graphics
                 RelativeSizeAxes = Axes.X,
                 Size = new Vector2(1,0),
                 EdgeSmoothness = Vector2.Zero,
-                Depth = -2.0f,
-                Alpha = (tdr.Position.DivisionIndex == 0) ? 1.0f : 0.5f
+                Depth = 3.0f,
+                Alpha = (tdr.Position.Numerator == 0) ? 1.0f : 0.5f
             });
         }
     }
