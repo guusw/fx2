@@ -57,7 +57,7 @@ namespace FX2.Game.Tests
             }
 
             Stream stream = File.Open(mapFile, FileMode.Open);
-            return new Beatmap.Beatmap(new BeatmapKSH(stream));
+            return new Beatmap.Beatmap(new BeatmapKsh(stream));
         }
 
         protected override bool UpdateSubTree()
@@ -104,7 +104,7 @@ namespace FX2.Game.Tests
             Add(controllerWindow = new ControllerWindow(audioTrack, playback));
             controllerWindow.Show();
 
-            effectController.Initializer(playback, audioTrack);
+            effectController.Initializer(playback, audioTrack, game.Audio.Sample);
         }
 
         protected override bool OnKeyDown(InputState state, KeyDownEventArgs args)

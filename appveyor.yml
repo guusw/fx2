@@ -43,6 +43,4 @@ notifications:
   - provider: Email
     to:
       - guus_waals@live.nl
-    subject: 'Build {{status}}'                  # optional
-    message: "{{message}}, {{commitId}}, ..."    # optional
     on_build_status_changed: true

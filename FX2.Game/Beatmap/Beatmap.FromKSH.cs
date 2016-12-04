@@ -4,18 +4,35 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using FX2.Game.Beatmap.Effects;
 
 namespace FX2.Game.Beatmap
 {
-    class BeatmapKSHConverter
+    class BeatmapKshConverter
     {
         private static readonly short[] GateRateParameterMap = {4, 8, 16, 32, 12, 24};
         private static readonly short[] RetriggerRateParameterMap = {8, 16, 32, 12, 24};
 
+        private static List<KshEffectFactory> EffectSettingsFactories = new List<KshEffectFactory>
+        {
+            new BiQuadFilterSettings.FromKsh(),
+            new BitCrusherSettings.FromKsh(),
+            new EchoSettings.FromKsh(),
+            new FlangerSettings.FromKsh(),
+            new PhaserSettings.FromKsh(),
+            new RetriggerSettings.FromKsh(),
+            new SideChainSettings.FromKsh(),
+            new TapeStopSettings.FromKsh(),
+            new WobbleSettings.FromKsh(),
+        };
+
         private Beatmap beatmap;
-        private BeatmapKSH sourceBeatmap;
+        private BeatmapKsh sourceBeatmap;
 
         private TimingPoint currentTimingPoint;
+
+        private TimeDivision currentPosition;
 
         /// <summary>
         /// Timing point that is pending to be added in the next measure
@@ -23,7 +40,7 @@ namespace FX2.Game.Beatmap
         private TimingPoint pendingTimingPoint;
 
         private Measure currentMeasure;
-        private BeatmapKSH.Measure sourceMeasure;
+        private BeatmapKsh.Measure sourceMeasure;
 
         /// <summary>
         /// Absolute measure index
@@ -65,6 +82,12 @@ namespace FX2.Game.Beatmap
         /// </summary>
         private short[][] currentButtonEffectParameters = {new short[2], new short[2]};
 
+        private Dictionary<ControlPointType, ObjectReference> lastControlPoints =
+            new Dictionary<ControlPointType, ObjectReference>();
+
+        private bool rollLocked = false;
+        private float rollIntensity = 1.0f;
+
         private static void ParseBeatOption(string option, TimingPoint timingPoint)
         {
             string[] split = option.Split('/');
@@ -74,7 +97,7 @@ namespace FX2.Game.Beatmap
             timingPoint.Denominator = int.Parse(split[1]);
         }
 
-        public BeatmapKSHConverter(Beatmap beatmap, BeatmapKSH sourceBeatmap)
+        public BeatmapKshConverter(Beatmap beatmap, BeatmapKsh sourceBeatmap)
         {
             this.beatmap = beatmap;
             this.sourceBeatmap = sourceBeatmap;
@@ -99,7 +122,9 @@ namespace FX2.Game.Beatmap
                     beatmap.Metadata.JacketPath = option.Value;
                 else if(option.Key == "m")
                 {
-                    if(option.Value.Length == 0) throw new BeatmapParserException("Invalid song path in beatmap options detected");
+                    if(option.Value.Length == 0)
+                        throw new BeatmapParserException("Invalid song path in beatmap options detected");
+
                     string[] paths = option.Value.Split(';');
                     if(paths.Length == 0)
                         beatmap.Metadata.AudioPath = option.Value;
@@ -141,6 +166,9 @@ namespace FX2.Game.Beatmap
                 currentTimingPoint.Denominator = 4;
             }
 
+            // Process custom effect types
+            ProcessEffectDefinitions();
+
             foreach(var sourceMeasure in sourceBeatmap.Measures)
             {
                 this.sourceMeasure = sourceMeasure;
@@ -159,10 +187,10 @@ namespace FX2.Game.Beatmap
                 currentMeasure = currentTimingPoint.AddMeasure();
                 foreach(var tick in sourceMeasure.Ticks)
                 {
+                    currentPosition = new TimeDivision(tickIndex, sourceMeasure.Ticks.Length);
+
                     if(tick.Options != null)
                         ProcessTickOptions(tick);
-
-                    var currentTimeDivision = new TimeDivision(tickIndex, sourceMeasure.Ticks.Length);
 
                     // Process button states
                     for(int i = 0; i < 6; i++)
@@ -172,12 +200,12 @@ namespace FX2.Game.Beatmap
                             // Terminate current button
                             if(buttonStates[i] != null)
                             {
-                                EndButtonState(i, currentTimeDivision);
+                                EndButtonState(i);
                             }
                         }
                         else if(buttonStates[i] == null)
                         {
-                            BeginButtonState(i, tick.Button[i], currentTimeDivision);
+                            BeginButtonState(i, tick.Button[i]);
                         }
                         else
                         {
@@ -186,10 +214,10 @@ namespace FX2.Game.Beatmap
                             // For buttons not using the 1/32 grid
                             if(!state.Snap32)
                             {
-                                EndButtonState(i, currentTimeDivision);
+                                EndButtonState(i);
 
                                 // Create new button state
-                                BeginButtonState(i, tick.Button[i], currentTimeDivision);
+                                BeginButtonState(i, tick.Button[i]);
                             }
                             else
                             {
@@ -202,28 +230,38 @@ namespace FX2.Game.Beatmap
                     // Process laser states
                     for(int i = 0; i < 2; i++)
                     {
-                        if(tick.Lasers[i] == BeatmapKSH.Tick.LaserNone)
+                        if(tick.Lasers[i] == BeatmapKsh.Tick.LaserNone)
                         {
                             // End laser
                             laserStates[i] = null;
                             laserExtended[i] = false; // Reset extended range
                         }
-                        else if(tick.Lasers[i] == BeatmapKSH.Tick.LaserLerp)
+                        else if(tick.Lasers[i] == BeatmapKsh.Tick.LaserLerp)
                         {
                             laserStates[i].NumTicks++;
                         }
                         else
                         {
-                            UpdateLaserState(i, tick, currentTimeDivision);
+                            UpdateLaserState(i, tick);
                         }
                     }
 
                     tickIndex++;
                 }
-                
+
                 tickIndex = 0;
                 measureIndex++;
                 relativeMeasureIndex++;
+            }
+        }
+
+        private void ProcessEffectDefinitions()
+        {
+            foreach(var def in sourceBeatmap.EffectDefinitions)
+            {
+                var factory = EffectSettingsFactories.First(
+                        effectFactory => effectFactory.SupportedEffectTypes.Contains(def.BaseType));
+                beatmap.RegisterEffect(def.Type, factory.GenerateEffectSettings(def));
             }
         }
 
@@ -235,7 +273,7 @@ namespace FX2.Game.Beatmap
             return $"m{measureIndex}-{tickIndex}/{sourceMeasure.Ticks.Length}";
         }
 
-        private void UpdateLaserState(int index, BeatmapKSH.Tick tick, TimeDivision position)
+        private void UpdateLaserState(int index, BeatmapKsh.Tick tick)
         {
             Laser laser;
             TempLaserState state;
@@ -270,7 +308,7 @@ namespace FX2.Game.Beatmap
                 state.LastObject = myRef;
             }
 
-            laser.Position = position;
+            laser.Position = currentPosition;
             laser.HorizontalPosition = tick.LaserAsFloat(index);
             if(laser.IsExtended)
             {
@@ -285,7 +323,8 @@ namespace FX2.Game.Beatmap
             {
                 double laserSlamThreshold = currentTimingPoint.BeatDuration / 7.0;
                 double duration = previousLaser.Next.AbsolutePosition - laser.Previous.AbsolutePosition;
-                createInstantSegment = duration <= laserSlamThreshold && previousLaser.HorizontalPosition != laser.HorizontalPosition;
+                createInstantSegment = duration <= laserSlamThreshold &&
+                                       previousLaser.HorizontalPosition != laser.HorizontalPosition;
             }
             if(createInstantSegment)
             {
@@ -300,16 +339,16 @@ namespace FX2.Game.Beatmap
 
             // Reset tick and last measure on laser state
             state.NumTicks = 0;
-            state.LastSourceMeasure = this.sourceMeasure;
+            state.LastSourceMeasure = sourceMeasure;
         }
 
-        private void BeginButtonState(int index, byte buttonCharacter, TimeDivision position)
+        private void BeginButtonState(int index, byte buttonCharacter)
         {
             var state = buttonStates[index] = new TempButtonState();
             state.StartTime = new TimeDivisionReference
             {
                 Measure = currentMeasure,
-                Position = position
+                Position = currentPosition
             };
 
             // TODO: Connect hold objects
@@ -375,7 +414,7 @@ namespace FX2.Game.Beatmap
             }
         }
 
-        private void EndButtonState(int index, TimeDivision currentPosition)
+        private void EndButtonState(int index)
         {
             var state = buttonStates[index];
             var targetMeasure = state.StartTime.Measure;
@@ -384,6 +423,11 @@ namespace FX2.Game.Beatmap
                 Hold start = new Hold();
                 start.Position = state.StartTime.Position;
                 start.Index = (byte)index;
+
+                // Copy effect settings
+                start.EffectType = state.EffectType;
+                start.EffectParameter0 = state.EffectParameter0;
+                start.EffectParameter1 = state.EffectParameter1;
 
                 // Add and resort
                 targetMeasure.Objects.Add(start);
@@ -434,23 +478,56 @@ namespace FX2.Game.Beatmap
             var originalEnding = currentTimingPoint.GetMeasureOffset(relativeMeasureIndex + 1) -
                                  currentTimingPoint.MeasureDuration * inMeasureOffset;
 
-
             newTimingPoint.Offset = originalEnding;
-            
+
             // Add new timing point to map
             beatmap.TimingPoints.Add(newTimingPoint);
             newTimingPoint.Beatmap = beatmap;
             currentTimingPoint = newTimingPoint;
-            
+
             relativeMeasureIndex = 0;
         }
 
-        private void SetButtonEffectTypeAndParameters(int fxButtonIndex, string options)
+        private void SetEffectTypeAndParameters(ObjectFilter objectFilter, string options)
         {
-
+            string[] values = options.Split(';');
+            if(values.Length == 1)
+                SetEffectType(objectFilter, options);
+            else
+            {
+                // Filter out parameters
+                SetEffectType(objectFilter, values[0]);
+                short parameter = short.Parse(values[1]);
+                if(objectFilter == ObjectFilter.Fx0)
+                    currentButtonEffectParameters[0][0] = parameter;
+                else
+                    currentButtonEffectParameters[1][0] = parameter;
+            }
         }
 
-        private void ProcessTickOptions(BeatmapKSH.Tick tick)
+        private void SetEffectType(ObjectFilter objectFilter, string options)
+        {
+            EffectType effectType = sourceBeatmap.ParseEffectType(options);
+            if((objectFilter & ObjectFilter.LaserMask) != 0)
+            {
+                // Only use events for laser effect type
+                LaserEffectTypeEvent evt = new LaserEffectTypeEvent
+                {
+                    EffectType = effectType,
+                    Position = currentPosition
+                };
+
+                currentMeasure.Objects.Add(evt);
+            }
+            else
+            {
+                // Store the current effect being used for this type so it can be embeded into the hold object
+                int button = objectFilter == ObjectFilter.Fx0 ? 0 : 1;
+                currentButtonEffectTypes[button] = effectType;
+            }
+        }
+
+        private void ProcessTickOptions(BeatmapKsh.Tick tick)
         {
             TimingPoint newTimingPoint = null;
 
@@ -515,11 +592,11 @@ namespace FX2.Game.Beatmap
                 }
                 else if(key == "fx-l")
                 {
-                    SetButtonEffectTypeAndParameters(0, option.Value);
+                    SetEffectTypeAndParameters(ObjectFilter.Fx0, option.Value);
                 }
                 else if(key == "fx-r")
                 {
-                    SetButtonEffectTypeAndParameters(1, option.Value);
+                    SetEffectTypeAndParameters(ObjectFilter.Fx1, option.Value);
                 }
                 else if(key == "fx-l_param1")
                 {
@@ -531,26 +608,68 @@ namespace FX2.Game.Beatmap
                 }
                 else if(key == "filtertype")
                 {
-                    // TODO: Set filter type
+                    SetEffectType(ObjectFilter.Laser0 | ObjectFilter.Laser1, option.Value);
                 }
                 else if(key == "pfiltergain")
                 {
-                    // TODO: Set filter gain
+                    AddControlPoint(float.Parse(option.Value) / 100.0f, ControlPointType.FilterMix, false);
                 }
                 else if(key == "chokkakuvol")
                 {
-                    // TODO: Set sample gain
+                    AddControlPoint(float.Parse(option.Value) / 100.0f, ControlPointType.SampleMix, false);
                 }
                 else if(key == "zoom_bottom")
                 {
-                    // TODO: Set zoom
+                    AddControlPoint(float.Parse(option.Value) / 100.0f, ControlPointType.ZoomBottom, true);
                 }
                 else if(key == "zoom_top")
                 {
-                    // TODO: Set zoom
+                    AddControlPoint(float.Parse(option.Value) / 100.0f, ControlPointType.ZoomTop, true);
                 }
                 else if(key == "tilt")
                 {
+                    bool lockRoll = false;
+                    string value = option.Value;
+                    if(value.StartsWith("keep_"))
+                    {
+                        lockRoll = true;
+                        value = value.Substring(5);
+                    }
+
+                    if(rollLocked != lockRoll)
+                    {
+                        RollModifier mod = new RollModifier {Position = currentPosition, Lock = lockRoll};
+                        currentMeasure.Objects.Add(mod);
+                        rollLocked = lockRoll;
+                    }
+
+                    float intensity = 1.0f;
+                    if(value == "zero")
+                    {
+                        intensity = 0.0f;
+                    }
+                    else if(value == "normal")
+                    {
+                        intensity = 1.0f;
+                    }
+                    else if(value == "bigger")
+                    {
+                        intensity = 2.0f;
+                    }
+                    else if(value == "biggest")
+                    {
+                        intensity = 3.0f;
+                    }
+                    else
+                    {
+                        throw new BeatmapParserException($"Unkown roll type {value}");
+                    }
+
+                    if(intensity != rollIntensity)
+                    {
+                        AddControlPoint(intensity, ControlPointType.RollIntensity, false);
+                        rollIntensity = intensity;
+                    }
                 }
                 else
                 {
@@ -562,6 +681,26 @@ namespace FX2.Game.Beatmap
             {
                 AddNewTimingPoint(newTimingPoint);
             }
+        }
+
+        private void AddControlPoint(float newValue, ControlPointType type, bool lerp)
+        {
+            ObjectReference last;
+            lastControlPoints.TryGetValue(type, out last);
+
+            ControlPoint current = new ControlPoint {Type = type, Value = newValue};
+            current.Position = currentPosition;
+            ObjectReference currentReference = new ObjectReference(current, currentMeasure);
+
+            if(lerp && last != null)
+            {
+                ControlPoint lastControlPoint = (ControlPoint)last.Object;
+                current.Previous = last;
+                lastControlPoint.Next = currentReference;
+            }
+
+            currentMeasure.Objects.Add(current);
+            lastControlPoints[type] = currentReference;
         }
 
         /// <summary>
@@ -591,7 +730,7 @@ namespace FX2.Game.Beatmap
             /// <summary>
             /// The last source measure
             /// </summary>
-            public BeatmapKSH.Measure LastSourceMeasure;
+            public BeatmapKsh.Measure LastSourceMeasure;
 
             /// <summary>
             /// Number of ticks in source map since last control point
@@ -606,9 +745,10 @@ namespace FX2.Game.Beatmap
         /// Tries to construct a beatmap from a KSH format beatmap
         /// </summary>
         /// <param name="beatmap">A valid KSH beatmap</param>
-        public Beatmap(BeatmapKSH beatmap)
+        public Beatmap(BeatmapKsh beatmap)
         {
-            BeatmapKSHConverter parser = new BeatmapKSHConverter(this, beatmap);
+            RegisterDefaultEffectSettings();
+            BeatmapKshConverter parser = new BeatmapKshConverter(this, beatmap);
             parser.Process();
         }
     }

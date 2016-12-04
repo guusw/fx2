@@ -25,6 +25,9 @@ namespace FX2.Game.Beatmap
         private List<Measure> measuresInView = new List<Measure>();
         private List<Measure> allMeasures = new List<Measure>();
 
+        private readonly List<ObjectReference> objectsToActivate = new List<ObjectReference>();
+        private readonly List<ObjectReference> objectsToDeactivate = new List<ObjectReference>();
+
         public Beatmap Beatmap
         {
             get { return beatmap; }
@@ -145,7 +148,7 @@ namespace FX2.Game.Beatmap
                 if(this.beatmap == null)
                     return;
 
-                beatmap.UpdateLaserIntervals();
+                beatmap.UpdateMap();
             }
 
             UpdateView();
@@ -225,7 +228,7 @@ namespace FX2.Game.Beatmap
                     var objRef = new ObjectReference(obj, measure);
                     if(!objectsInView.Contains(objRef))
                     {
-                        if(GetObjectEndingPosition(objRef) < position || GetObjectStartingPosition(objRef) > endPosition)
+                        if(GetObjectGroupEndingPosition(objRef) < position || GetObjectGroupStartingPosition(objRef) > endPosition)
                             continue;
 
                         double objectPosition = obj.GetAbsolutePosition(measure);
@@ -248,7 +251,7 @@ namespace FX2.Game.Beatmap
                 {
                     if(!objectsInView.Contains(objRef))
                     {
-                        if(GetObjectEndingPosition(objRef) < position || GetObjectStartingPosition(objRef) > endPosition)
+                        if(GetObjectGroupEndingPosition(objRef) < position || GetObjectGroupStartingPosition(objRef) > endPosition)
                             continue;
 
                         // Add this object to the view list
@@ -303,8 +306,7 @@ namespace FX2.Game.Beatmap
                 {
                     if(!activeObjects.Contains(obj))
                     {
-                        OnObjectActivated(obj);
-                        activeObjects.Add(obj);
+                        objectsToActivate.Add(obj);
                     }
                 }
             }
@@ -319,6 +321,20 @@ namespace FX2.Game.Beatmap
                 // Can't have ended
                 HasEnded = false;
             }
+
+            // Process pending activations
+            foreach(var obj in objectsToActivate)
+            {
+                OnObjectActivated(obj);
+                activeObjects.Add(obj);
+            }
+            foreach(var obj in objectsToDeactivate)
+            {
+                OnObjectDeactivated(obj);
+                activeObjects.Remove(obj);
+            }
+            objectsToActivate.Clear();
+            objectsToDeactivate.Clear();
         }
 
         /// <summary>
@@ -401,7 +417,7 @@ namespace FX2.Game.Beatmap
         }
 
         // TODO: These can be cached
-        private double GetObjectStartingPosition(ObjectReference obj)
+        private double GetObjectGroupStartingPosition(ObjectReference obj)
         {
             var laser = obj.Object as Laser;
             if(laser != null)
@@ -419,7 +435,7 @@ namespace FX2.Game.Beatmap
         }
 
         // TODO: These can be cached
-        private double GetObjectEndingPosition(ObjectReference obj)
+        private double GetObjectGroupEndingPosition(ObjectReference obj)
         {
             var laser = obj.Object as Laser;
             if(laser != null)
@@ -472,15 +488,19 @@ namespace FX2.Game.Beatmap
             // Also handle addition/removal of active objects
             for(int i = 0; i < objectsInView.Count;)
             {
-                double startingPosition = GetObjectStartingPosition(objectsInView[i]);
-                double endingPosition = GetObjectEndingPosition(objectsInView[i]);
-                if(endingPosition < position ||
-                   startingPosition > endPosition)
+                double startingPosition = GetObjectGroupStartingPosition(objectsInView[i]);
+                double endingPosition = GetObjectGroupEndingPosition(objectsInView[i]);
+                if(endingPosition < position)
                 {
                     if(ActiveObjects.Contains(objectsInView[i]))
                     {
-                        OnObjectDeactivated(objectsInView[i]);
-                        activeObjects.Remove(objectsInView[i]);
+                        objectsToDeactivate.Add(objectsInView[i]);
+                    }
+                    else
+                    {
+                        // This should be single hit object
+                        objectsToActivate.Add(objectsInView[i]);
+                        objectsToDeactivate.Add(objectsInView[i]);
                     }
 
                     OnObjectLeft(objectsInView[i]);
@@ -488,13 +508,15 @@ namespace FX2.Game.Beatmap
                 }
                 else
                 {
+                    // Use actual starting postion
+                    startingPosition = objectsInView[i].AbsolutePosition;
+
                     // Handle new active objects
                     if(startingPosition < position)
                     {
                         if(!activeObjects.Contains(objectsInView[i]))
                         {
-                            OnObjectActivated(objectsInView[i]);
-                            activeObjects.Add(objectsInView[i]);
+                            objectsToActivate.Add(objectsInView[i]);
                         }
                     }
 

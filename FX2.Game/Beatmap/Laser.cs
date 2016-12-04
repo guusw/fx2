@@ -45,7 +45,7 @@ namespace FX2.Game.Beatmap
                 var nextLaser = (Laser)next.Object;
 
                 double currentStartTime = start.AbsolutePosition;
-                if(start.AbsolutePosition < time)
+                if(next.AbsolutePosition > time)
                 {
                     if(currentLaser.IsInstant)
                         return currentLaser.HorizontalPosition;

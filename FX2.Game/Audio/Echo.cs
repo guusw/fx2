@@ -33,7 +33,7 @@ namespace FX2.Game.Audio
             for(int i = 0; i < numSamples; i++)
             {
                 // Insert new samples before current position
-                int insertPos = (bufferOffset - 2) % echoBuffer.Length;
+                int insertPos = (int)((uint)(bufferOffset - 2) % echoBuffer.Length);
 
                 float l0 = echoBuffer[bufferOffset + 0];
                 float l1 = echoBuffer[bufferOffset + 1];

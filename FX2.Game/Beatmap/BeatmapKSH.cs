@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Text;
 using osu.Framework.Configuration;
 
@@ -22,7 +23,7 @@ namespace FX2.Game.Beatmap
         public int Column;
     }
 
-    public class BeatmapKSH
+    public class BeatmapKsh
     {
         public const string Separator = "--";
 
@@ -30,6 +31,7 @@ namespace FX2.Game.Beatmap
 
         public static readonly Dictionary<string, EffectType> EffectTypes = new Dictionary<string, EffectType>
         {
+            [""] = EffectType.None,
             ["fx;bitc"] = EffectType.BitCrusher,
             ["bitc"] = EffectType.BitCrusher,
             ["lpf1"] = EffectType.LowPassFilter,
@@ -46,6 +48,10 @@ namespace FX2.Game.Beatmap
             ["Echo"] = EffectType.Echo,
             ["BitCrusher"] = EffectType.BitCrusher,
             ["TapeStop"] = EffectType.TapeStop,
+            ["PitchShift"] = EffectType.PitchShift,
+            ["LPF"] = EffectType.LowPassFilter,
+		    ["HPF"] = EffectType.HighPassFilter,
+		    ["PEAK"] = EffectType.PeakingFilter,
         };
 
         /// <summary>
@@ -63,7 +69,7 @@ namespace FX2.Game.Beatmap
         /// </summary>
         public readonly List<Measure> Measures = new List<Measure>(2000);
         
-        static BeatmapKSH()
+        static BeatmapKsh()
         {
             LaserCharacters = new Dictionary<char, byte>();
             Action<char, char> AddRange = (char start, char end) =>
@@ -78,9 +84,13 @@ namespace FX2.Game.Beatmap
             AddRange('a', 'o');
         }
         
-        public static EffectType ParseEffectType(string name)
+        public EffectType ParseEffectType(string name)
         {
-            return EffectTypes[name];
+            EffectType type;
+            if(EffectTypes.TryGetValue(name, out type))
+                return type;
+
+            return EffectDefinitions.First(x => x.Name == name).Type;
         }
 
         /// <summary>
@@ -89,7 +99,7 @@ namespace FX2.Game.Beatmap
         /// <exception cref="BeatmapParserException">Thrown when the parsing failed</exception>
         /// <param name="stream"></param>
         /// <param name="skipBody">if true, the beatmap body is not read, only the metadata and initial timing info</param>
-        public BeatmapKSH(Stream stream, bool skipBody = false)
+        public BeatmapKsh(Stream stream, bool skipBody = false)
         {
             using(Parser parser = new Parser(stream, skipBody ? 128 : 65536))
             {

@@ -68,7 +68,7 @@ namespace FX2.Game.Audio
                     //update filter coeffs
                     float a1 = (1.0f - d) / (1.0f + d);
                     for(int j = 0; j < NumBands; j++)
-                        allPassFilters[i + filterOffset].a1 = a1;
+                        allPassFilters[j + filterOffset].a1 = a1;
 
                     // Calculate ouput from filters chained together
                     // Merry christmas!

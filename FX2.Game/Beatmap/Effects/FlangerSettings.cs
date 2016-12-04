@@ -2,6 +2,7 @@
 // Licensed under the MIT License(MIT)
 // See "LICENSE.txt" for more information
 
+using System.Collections.Generic;
 using System.Drawing.Printing;
 using FX2.Game.Audio;
 
@@ -25,6 +26,16 @@ namespace FX2.Game.Beatmap.Effects
                 Dsp.Duration = settings.Duration.GetActualDuration(Context.Playback.CurrentTimingPoint);
                 Dsp.MinimumDelay = settings.MinimumDelay;
                 Dsp.MaximumDelay = settings.MaximumDelay;
+            }
+        }
+        
+        public class FromKsh : KshEffectFactory
+        {
+            public override IEnumerable<EffectType> SupportedEffectTypes { get; } = new[] { EffectType.Flanger };
+
+            public override EffectSettings GenerateEffectSettings(BeatmapKsh.EffectDefinition effectDefinition)
+            {
+                return new FlangerSettings();
             }
         }
     }

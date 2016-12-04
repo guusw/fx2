@@ -14,7 +14,7 @@ namespace FX2.Game.Beatmap.Effects
     public abstract class EffectState : IDisposable
     {
         private bool enabled;
-
+        
         public virtual void Dispose()
         {
         }
@@ -34,6 +34,11 @@ namespace FX2.Game.Beatmap.Effects
                 }
             }
         }
+
+        /// <summary>
+        /// The dsp base class type, given a different name so the typed implementation can use 'Dsp'
+        /// </summary>
+        public abstract Dsp BaseDsp { get; }
 
         public static TEffectState Instantiate<TEffectState>(PlaybackContext playbackContext, EffectSettings settings) where TEffectState : EffectState, new()
         {
@@ -74,6 +79,7 @@ namespace FX2.Game.Beatmap.Effects
     /// </summary>
     public abstract class DspEffectState<TDspType> : EffectState where TDspType : Dsp
     {
+        public override Dsp BaseDsp => Dsp;
         public TDspType Dsp { get; private set; }
         public EffectSettings Settings { get; private set; }
         protected PlaybackContext Context { get; private set; }

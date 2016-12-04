@@ -2,6 +2,7 @@
 // Licensed under the MIT License(MIT)
 // See "LICENSE.txt" for more information
 
+using System.Collections.Generic;
 using FX2.Game.Audio;
 
 namespace FX2.Game.Beatmap.Effects
@@ -14,7 +15,7 @@ namespace FX2.Game.Beatmap.Effects
         /// <summary>
         /// Reduction in sample rate
         /// </summary>
-        public EffectParameterRange<double> Reduction;
+        public EffectParameterRange<double> Reduction = new EffectParameterRange<double>(8.0, 64.0);
 
         public class BitCrusherEffectState : DspEffectStateDefault<BitCrusher>
         {
@@ -38,6 +39,16 @@ namespace FX2.Game.Beatmap.Effects
                 var settings = (BitCrusherSettings)Settings;
                 Dsp.Reduction = settings.Reduction.Minimum +
                                 (settings.Reduction.Maximum - settings.Reduction.Minimum) * input;
+            }
+        }
+        
+        public class FromKsh : KshEffectFactory
+        {
+            public override IEnumerable<EffectType> SupportedEffectTypes { get; } = new[] { EffectType.BitCrusher };
+
+            public override EffectSettings GenerateEffectSettings(BeatmapKsh.EffectDefinition effectDefinition)
+            {
+                return new BitCrusherSettings();
             }
         }
     }

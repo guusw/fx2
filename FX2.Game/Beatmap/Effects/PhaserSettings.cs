@@ -3,6 +3,7 @@
 // See "LICENSE.txt" for more information
 
 using System;
+using System.Collections.Generic;
 using FX2.Game.Audio;
 
 namespace FX2.Game.Beatmap.Effects
@@ -26,6 +27,16 @@ namespace FX2.Game.Beatmap.Effects
                 Dsp.Feedback = settings.Feedback;
                 Dsp.MinimumFrequency = settings.MinimumFrequency;
                 Dsp.MaxmimumFrequency = settings.MaximumFrequency;
+            }
+        }
+        
+        public class FromKsh : KshEffectFactory
+        {
+            public override IEnumerable<EffectType> SupportedEffectTypes { get; } = new[] { EffectType.Phaser };
+
+            public override EffectSettings GenerateEffectSettings(BeatmapKsh.EffectDefinition effectDefinition)
+            {
+                return new PhaserSettings();
             }
         }
     }

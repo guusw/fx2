@@ -134,6 +134,20 @@ namespace FX2.Game.Beatmap
             }
         }
 
+        /// <summary>
+        /// The index of this timing point
+        /// </summary>
+        public int Index
+        {
+            get
+            {
+                if(Beatmap == null)
+                    return 0;
+
+                return Beatmap.TimingPoints.IndexOf(this);
+            }
+        }
+
         public TimingPoint()
         {
             Update();

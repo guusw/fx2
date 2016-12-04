@@ -15,6 +15,7 @@ namespace FX2.Game.Beatmap
         Wobble,
         SideChain,
         Echo,
+        PitchShift,
         LowPassFilter,
         HighPassFilter,
         PeakingFilter,

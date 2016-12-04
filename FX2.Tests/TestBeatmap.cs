@@ -31,7 +31,7 @@ namespace FX2.Tests
             using(var file = OpenTestMap("soflan"))
             {
                 // Load only metadata
-                BeatmapKSH kshBeatmap = new BeatmapKSH(file, true);
+                BeatmapKsh kshBeatmap = new BeatmapKsh(file, true);
                 Assert.IsEmpty(kshBeatmap.Measures);
                 Assert.IsNotEmpty(kshBeatmap.Options);
                 Assert.AreEqual(20, kshBeatmap.Options.Count);
@@ -43,7 +43,7 @@ namespace FX2.Tests
             using(var file = OpenTestMap("soflan"))
             {
                 // Load again but fully this time
-                BeatmapKSH kshBeatmap = new BeatmapKSH(file, false);
+                BeatmapKsh kshBeatmap = new BeatmapKsh(file, false);
                 Assert.IsNotEmpty(kshBeatmap.Measures);
 
                 var firstMeasure = kshBeatmap.Measures[0];
@@ -53,8 +53,8 @@ namespace FX2.Tests
                 Assert.AreEqual(2, firstTick.Options.Count);
                 Assert.AreEqual("230", firstTick.Options["t"]);
 
-                Assert.AreEqual(BeatmapKSH.Tick.LaserNone, firstTick.Lasers[0]);
-                Assert.AreEqual(BeatmapKSH.Tick.LaserNone, firstTick.Lasers[1]);
+                Assert.AreEqual(BeatmapKsh.Tick.LaserNone, firstTick.Lasers[0]);
+                Assert.AreEqual(BeatmapKsh.Tick.LaserNone, firstTick.Lasers[1]);
             }
         }
 
@@ -63,7 +63,7 @@ namespace FX2.Tests
         {
             using(var file = OpenTestMap("C18H27NO3"))
             {
-                BeatmapKSH kshBeatmap = new BeatmapKSH(file);
+                BeatmapKsh kshBeatmap = new BeatmapKsh(file);
                 Assert.IsNotEmpty(kshBeatmap.Options);
                 Assert.AreEqual(19, kshBeatmap.Options.Count);
                 Assert.AreEqual("C18H27NO3", kshBeatmap.Options["title"]);
@@ -202,7 +202,7 @@ namespace FX2.Tests
             using(var file = OpenTestMap("C18H27NO3"))
             {
                 // Load only metadata
-                BeatmapKSH kshBeatmap = new BeatmapKSH(file);
+                BeatmapKsh kshBeatmap = new BeatmapKsh(file);
                 beatmap = new Beatmap(kshBeatmap);
             }
 
@@ -250,7 +250,7 @@ namespace FX2.Tests
             using(var file = OpenTestMap("C18H27NO3"))
             {
                 // Load only metadata
-                BeatmapKSH kshBeatmap = new BeatmapKSH(file);
+                BeatmapKsh kshBeatmap = new BeatmapKsh(file);
                 beatmap = new Beatmap(kshBeatmap);
             }
 
@@ -287,7 +287,7 @@ namespace FX2.Tests
             using(var file = OpenTestMap("C18H27NO3"))
             {
                 // Load only metadata
-                BeatmapKSH kshBeatmap = new BeatmapKSH(file);
+                BeatmapKsh kshBeatmap = new BeatmapKsh(file);
                 beatmap = new Beatmap(kshBeatmap);
             }
 
@@ -361,7 +361,7 @@ namespace FX2.Tests
             using(var file = OpenTestMap("C18H27NO3"))
             {
                 // Load only metadata
-                BeatmapKSH kshBeatmap = new BeatmapKSH(file);
+                BeatmapKsh kshBeatmap = new BeatmapKsh(file);
                 beatmap = new Beatmap(kshBeatmap);
             }
             
@@ -428,7 +428,7 @@ namespace FX2.Tests
             using(var file = OpenTestMap("C18H27NO3"))
             {
                 // Load only metadata
-                BeatmapKSH kshBeatmap = new BeatmapKSH(file);
+                BeatmapKsh kshBeatmap = new BeatmapKsh(file);
                 beatmap = new Beatmap(kshBeatmap);
             }
 
@@ -540,7 +540,7 @@ namespace FX2.Tests
             using(var file = OpenTestMap("C18H27NO3"))
             {
                 // Load only metadata
-                BeatmapKSH kshBeatmap = new BeatmapKSH(file);
+                BeatmapKsh kshBeatmap = new BeatmapKsh(file);
                 beatmap = new Beatmap(kshBeatmap);
             }
 

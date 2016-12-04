@@ -2,9 +2,11 @@
 // Licensed under the MIT License(MIT)
 // See "LICENSE.txt" for more information
 
+using System;
+
 namespace FX2.Game.Beatmap
 {
-    public class TimeDivisionReference
+    public class TimeDivisionReference : IComparable<TimeDivisionReference>
     {
         /// <summary>
         /// The measure that the object is contained in
@@ -48,6 +50,19 @@ namespace FX2.Game.Beatmap
             {
                 return ((Measure != null ? Measure.GetHashCode() : 0) * 397) ^ Position.GetHashCode();
             }
+        }
+
+        public int CompareTo(TimeDivisionReference other)
+        {
+            int tp = Measure.TimingPoint.Index.CompareTo(other.Measure.TimingPoint.Index);
+            if(tp != 0)
+                return tp;
+
+            int m = Measure.Index.CompareTo(other.Measure.Index);
+            if(m != 0)
+                return m;
+
+            return Position.CompareTo(other.Position);
         }
 
         protected bool Equals(TimeDivisionReference other)

@@ -278,7 +278,7 @@ namespace FX2.Game.Database
                 try
                 {
                     var stream = File.OpenRead(mapFile.FullName);
-                    BeatmapKSH mapKsh = new BeatmapKSH(stream, true);
+                    BeatmapKsh mapKsh = new BeatmapKsh(stream, true);
                     Beatmap.Beatmap map = new Beatmap.Beatmap(mapKsh);
                     databaseScheduler.Add(() => { AddDifficulty(mapFile, map.Metadata); });
                 }

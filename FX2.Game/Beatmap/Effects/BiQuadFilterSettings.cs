@@ -3,6 +3,7 @@
 // See "LICENSE.txt" for more information
 
 using System;
+using System.Collections.Generic;
 using FX2.Game.Audio;
 
 namespace FX2.Game.Beatmap.Effects
@@ -23,7 +24,7 @@ namespace FX2.Game.Beatmap.Effects
 
         public EffectParameterRange<double> Q = new EffectParameterRange<double>(0.5, 1);
         public EffectParameterRange<double> Frequency = new EffectParameterRange<double>(200.0, 10000.0);
-        public EffectParameterRange<double> Gain = new EffectParameterRange<double>(20.0, 20.0);
+        public EffectParameterRange<double> Gain = new EffectParameterRange<double>(10.0, 10.0);
 
         public class BiQuadFilterEffectState : DspEffectStateDefault<BiQuadFilter>
         {
@@ -58,6 +59,33 @@ namespace FX2.Game.Beatmap.Effects
                         Dsp.SetPeaking(q, frequency, gain, Context.Track.SampleRate);
                         break;
                 }
+            }
+        }
+        
+        public class FromKsh : KshEffectFactory
+        {
+            public override IEnumerable<EffectType> SupportedEffectTypes { get; } = new[]
+            {
+                EffectType.LowPassFilter, EffectType.HighPassFilter, EffectType.PeakingFilter,
+            };
+
+            public override EffectSettings GenerateEffectSettings(BeatmapKsh.EffectDefinition effectDefinition)
+            {
+                var settings = new BiQuadFilterSettings();
+                switch(effectDefinition.BaseType)
+                {
+                    case EffectType.HighPassFilter:
+                        settings.FilterType = BiQuadFilterType.HighPass;
+                        break;
+                    case EffectType.LowPassFilter:
+                        settings.FilterType = BiQuadFilterType.LowPass;
+                        break;
+                    case EffectType.PeakingFilter:
+                        settings.FilterType = BiQuadFilterType.Peaking;
+                        break;
+                }
+
+                return settings;
             }
         }
     }

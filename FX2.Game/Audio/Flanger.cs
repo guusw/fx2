@@ -56,7 +56,7 @@ namespace FX2.Game.Audio
             {
                 float f = ((float)time / (float)Duration) * MathHelper.TwoPi;
                 int d = (int)(minimumDelay + ((maximumDelay - 1) - minimumDelay) * ((float)Math.Sin(f) * 0.5f + 0.5f));
-                int samplePos = (bufferOffset - d * 2) % sampleBuffer.Length;
+                int samplePos = (int)((uint)(bufferOffset - d * 2) % sampleBuffer.Length);
 
                 // Inject new sample
                 sampleBuffer[bufferOffset + 0] = buffer[i * 2];

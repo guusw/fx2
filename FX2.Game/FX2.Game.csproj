@@ -69,8 +69,8 @@
     <Compile Include="Audio\SideChain.cs" />
     <Compile Include="Audio\TapeStop.cs" />
     <Compile Include="Beatmap\Beatmap.cs" />
-    <Compile Include="Beatmap\Beatmap.FromKSH.cs" />
-    <Compile Include="Beatmap\BeatmapKSH.cs" />
+    <Compile Include="Beatmap\Beatmap.FromKsh.cs" />
+    <Compile Include="Beatmap\BeatmapKsh.cs" />
     <Compile Include="Beatmap\BeatmapMetadata.cs" />
     <Compile Include="Beatmap\BeatmapPlayback.cs" />
     <Compile Include="Beatmap\Button.cs" />
@@ -88,10 +88,13 @@
     <Compile Include="Beatmap\Effects\TapeStopSettings.cs" />
     <Compile Include="Beatmap\Effects\WobbleSettings.cs" />
     <Compile Include="Beatmap\EffectType.cs" />
+    <Compile Include="Beatmap\Event.cs" />
     <Compile Include="Beatmap\Hold.cs" />
+    <Compile Include="Beatmap\KshEffectFactory.cs" />
     <Compile Include="Beatmap\Laser.cs" />
     <Compile Include="Beatmap\Measure.cs" />
     <Compile Include="Beatmap\Object.cs" />
+    <Compile Include="Beatmap\ObjectFilter.cs" />
     <Compile Include="Beatmap\Reference.cs" />
     <Compile Include="Beatmap\TimeDivision.cs" />
     <Compile Include="Beatmap\TimeDivisionReference.cs" />

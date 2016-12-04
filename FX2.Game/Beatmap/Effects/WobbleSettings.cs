@@ -3,6 +3,7 @@
 // See "LICENSE.txt" for more information
 
 using System;
+using System.Collections.Generic;
 using FX2.Game.Audio;
 
 namespace FX2.Game.Beatmap.Effects
@@ -22,6 +23,16 @@ namespace FX2.Game.Beatmap.Effects
             {
                 CurrentTime += elapsedTime.TotalSeconds;
                 // TODO: Implement wobble
+            }
+        }
+        
+        public class FromKsh : KshEffectFactory
+        {
+            public override IEnumerable<EffectType> SupportedEffectTypes { get; } = new[] { EffectType.Wobble };
+
+            public override EffectSettings GenerateEffectSettings(BeatmapKsh.EffectDefinition effectDefinition)
+            {
+                return new WobbleSettings();
             }
         }
     }

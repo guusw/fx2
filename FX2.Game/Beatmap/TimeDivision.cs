@@ -13,7 +13,7 @@ namespace FX2.Game.Beatmap
     /// <summary>
     /// Defines a segment of time of a single measure using a Numerator and Denominator
     /// </summary>
-    public struct TimeDivision
+    public struct TimeDivision : IComparable<TimeDivision>
     {
         /// <summary>
         /// Starting position
